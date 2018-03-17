@@ -9,8 +9,8 @@ const e3 = new Edge('e3', 2, v3, v1);
 const result = dijkstra(v1);
 
 const canvasEl = document.getElementById('graph-canvas');
-canvasEl.height = NUM_PIXELS;
-canvasEl.width = NUM_PIXELS;
+canvasEl.height = PIXEL_HEIGHT;
+canvasEl.width = PIXEL_WIDTH;
 
 const ctx = canvasEl.getContext('2d');
 const graphViewer = new GraphViewer(ctx, [v1, v2, v3]);

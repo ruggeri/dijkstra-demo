@@ -1,5 +1,6 @@
-const NUM_PIXELS = 500;
-const VERTEX_RADIUS = 0.05
+const PIXEL_HEIGHT = 768;
+const PIXEL_WIDTH = 1024;
+const VERTEX_RADIUS = 25;
 
 class GraphViewer {
   constructor(ctx, vertices) {
@@ -18,7 +19,7 @@ class GraphViewer {
 
   draw() {
     this.ctx.fillStyle = 'rgb(0, 0, 0)';
-    this.ctx.fillRect(0, 0, NUM_PIXELS, NUM_PIXELS);
+    this.ctx.fillRect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT);
 
     this.vertices.forEach(vertex => this.drawVertex(vertex));
   }
@@ -30,9 +31,9 @@ class GraphViewer {
     this.ctx.fillStyle = 'rgb(255, 255, 255)';
     this.ctx.beginPath();
     this.ctx.arc(
-      position.x * NUM_PIXELS,
-      position.y * NUM_PIXELS,
-      VERTEX_RADIUS * NUM_PIXELS,
+      position.x * PIXEL_WIDTH,
+      position.y * PIXEL_HEIGHT,
+      VERTEX_RADIUS,
       0,
       2 * Math.PI,
     );
