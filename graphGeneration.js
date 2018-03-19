@@ -4,6 +4,7 @@ const MIN_DISTANCE = 0.275;
 //const MAX_EDGE_LENGTH = 1.0;
 const PADDING = 0.05;
 const MAX_GENERATE_POSITION_TRIES = 100;
+const MAX_GENERATE_GRAPH_TRIES = 10;
 const MAX_NUM_EDGES = 3;
 
 const VERTEX_NAMES = [
@@ -42,7 +43,7 @@ function generateNewPosition(vertexPositions) {
     if (!tooClose) return newPosition;
   }
 
-  throw "Maxed out tries";
+  throw "Maxed out position tries";
 }
 
 function neighborsByDistance(vertex, vertexPositions) {
@@ -81,7 +82,7 @@ function addNewEdge(vertex, vertexPositions) {
   };
 }
 
-function generateGraph() {
+function tryGenerateGraph() {
   const vertices = [];
   const vertexPositions = new Map();
 
@@ -99,4 +100,18 @@ function generateGraph() {
   }
 
   return { vertices, vertexPositions };
+}
+
+function generateGraph() {
+  for (let idx = 0; idx < MAX_GENERATE_GRAPH_TRIES; idx++) {
+    try {
+      const graph = tryGenerateGraph();
+      console.log("Successfully generated graph");
+      return graph;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  throw "Maxed out graph tries";
 }
