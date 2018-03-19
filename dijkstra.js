@@ -221,6 +221,12 @@ function* dijkstra(startVertex) {
         result,
       };
     }
+
+    yield {
+      name: 'UPDATE_COMPLETE',
+      fringe,
+      result,
+    };
   }
 
   yield {

@@ -57,6 +57,11 @@ function handleMessage(msg) {
       newCost: msg.newEntry.totalCost,
     });
     break;
+  case 'UPDATE_COMPLETE':
+    actionPreEl.innerText = prettyJSON({
+      name: msg.name
+    });
+    break;
   case 'FINAL_RESULT':
     actionPreEl.innerText = prettyJSON({
       name: msg.name
