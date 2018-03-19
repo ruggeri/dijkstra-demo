@@ -2,6 +2,13 @@ const PIXEL_HEIGHT = 768;
 const PIXEL_WIDTH = 1024;
 const VERTEX_RADIUS = 25;
 
+const BACKGROUND_COLOR = 'rgb(128, 128, 128)';
+const EDGE_COLOR = 'rgb(255, 0, 0)';
+const EDGE_LINE_WIDTH = 2.5;
+const FONT_SIZE = 24;
+const VERTEX_COLOR = 'rgb(0, 0, 255)';
+const VERTEX_TEXT_COLOR = 'rgb(255, 255, 255)';
+
 class GraphViewer {
   constructor(ctx, vertices) {
     this.ctx = ctx;
@@ -11,32 +18,64 @@ class GraphViewer {
 
     vertices.forEach(v => {
       this.vertexPositions.set(v, {
-        x: Math.random(),
-        y: Math.random(),
+        x: Math.random() * PIXEL_WIDTH,
+        y: Math.random() * PIXEL_HEIGHT,
       });
     });
   }
 
   draw() {
-    this.ctx.fillStyle = 'rgb(0, 0, 0)';
+    this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT);
 
+    this.vertices.forEach(vertex => {
+      vertex.edges.forEach(e => this.drawEdge(e));
+    });
     this.vertices.forEach(vertex => this.drawVertex(vertex));
+  }
+
+  writeText(text, position, fontColor = 'rgb(0, 0, 0)') {
+    this.ctx.font = `${FONT_SIZE}px monospace`;
+    this.ctx.fillStyle = fontColor;
+    const textWidth = this.ctx.measureText(text).width;
+    this.ctx.fillText(
+      text,
+      position.x - (textWidth / 2),
+      position.y + (12 / 2),
+    );
   }
 
   drawVertex(vertex) {
     const position = this.vertexPositions.get(vertex);
-    console.log(position)
 
-    this.ctx.fillStyle = 'rgb(255, 255, 255)';
+    this.ctx.fillStyle = VERTEX_COLOR;
     this.ctx.beginPath();
-    this.ctx.arc(
-      position.x * PIXEL_WIDTH,
-      position.y * PIXEL_HEIGHT,
-      VERTEX_RADIUS,
-      0,
-      2 * Math.PI,
-    );
+    this.ctx.arc(position.x, position.y, VERTEX_RADIUS, 0, 2 * Math.PI);
     this.ctx.fill();
+
+    this.writeText(vertex.name, position, VERTEX_TEXT_COLOR);
+  }
+
+  drawEdge(edge) {
+    const startPosition = this.vertexPositions.get(edge.vertices[0]);
+    const endPosition = this.vertexPositions.get(edge.vertices[1]);
+
+    this.ctx.lineWidth = EDGE_LINE_WIDTH;
+    this.ctx.strokeStyle = EDGE_COLOR;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(startPosition.x, startPosition.y);
+    this.ctx.lineTo(endPosition.x, endPosition.y);
+    this.ctx.stroke();
+
+    const halfwayPosition = {
+      x: (startPosition.x + endPosition.x) / 2,
+      y: (startPosition.y + endPosition.y) / 2,
+    };
+
+    this.writeText(
+      `${edge.name}: $${edge.cost}`,
+      halfwayPosition,
+    )
   }
 }
