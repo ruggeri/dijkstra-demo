@@ -2,16 +2,16 @@ const BACKGROUND_COLOR = 'gray';
 const EDGE_FONT_SIZE = 20;
 const EDGE_LINE_WIDTH = 2.5;
 const EDGE_TEXT_COLOR = 'white';
-const PIXEL_HEIGHT = 768;
-const PIXEL_WIDTH = 1024;
 const VERTEX_FONT_SIZE = 24;
 const VERTEX_RADIUS = 25;
 const VERTEX_TEXT_COLOR = 'white';
 
 class GraphViewer {
   constructor(canvasEl, vertices, vertexPositions, graphColorer) {
-    canvasEl.height = PIXEL_HEIGHT;
-    canvasEl.width = PIXEL_WIDTH;
+    this.canvasHeight = parseInt(getComputedStyle(canvasEl).height);
+    this.canvasWidth = parseInt(getComputedStyle(canvasEl).width);
+    canvasEl.height = this.canvasHeight;
+    canvasEl.width = this.canvasWidth;
 
     this.ctx = canvasEl.getContext('2d');
 
@@ -20,8 +20,8 @@ class GraphViewer {
 
     vertexPositions.forEach((pos, v) => {
       this.vertexPositions.set(v, {
-        x: pos.x * PIXEL_WIDTH,
-        y: pos.y * PIXEL_HEIGHT
+        x: pos.x * this.canvasWidth,
+        y: pos.y * this.canvasHeight,
       });
     });
 
@@ -31,7 +31,7 @@ class GraphViewer {
 
   draw() {
     this.ctx.fillStyle = BACKGROUND_COLOR;
-    this.ctx.fillRect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT);
+    this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
     this.vertices.forEach(vertex => {
       vertex.edges.forEach(e => this.drawEdge(e));
