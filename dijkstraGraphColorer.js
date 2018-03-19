@@ -1,9 +1,11 @@
-const ACTIVE_EDGE_COLOR = 'rgb(255, 255, 0)';
+const CONSIDERED_EDGE_COLOR = 'rgb(255, 255, 0)';
 const DEFAULT_EDGE_COLOR = 'rgb(0, 0, 255)';
+const EXTRACTED_EDGE_COLOR = 'rgb(0, 255, 255)';
 const VISITED_EDGE_COLOR = 'rgb(0, 255, 0)';
 
-const ACTIVE_VERTEX_COLOR = 'rgb(255, 255, 0)';
+const CONSIDERED_VERTEX_COLOR = 'rgb(255, 255, 0)';
 const DEFAULT_VERTEX_COLOR = 'rgb(0, 0, 255)';
+const EXTRACTED_VERTEX_COLOR = 'rgb(0, 255, 255)';
 const START_VERTEX_COLOR = 'rgb(255, 0, 0)';
 const VISITED_VERTEX_COLOR = 'rgb(0, 255, 0)';
 
@@ -14,22 +16,28 @@ class DijkstraGraphColorer {
       startVertex,
       result,
       fringe,
-      activeEdge,
-      activeVertex
+      consideredEdge,
+      consideredVertex,
+      extractedEdge,
+      extractedVertex,
     } = options;
 
     this.startVertex = startVertex;
     this.result = result || new ResultMap();
     this.fringe = fringe || new Fringe();
-    this.activeEdge = activeEdge;
-    this.activeVertex = activeVertex;
+    this.consideredEdge = consideredEdge;
+    this.consideredVertex = consideredVertex;
+    this.extractedEdge = extractedEdge;
+    this.extractedVertex = extractedVertex;
   }
 
   colorVertex(vertex) {
     if (this.startVertex === vertex) {
       return START_VERTEX_COLOR;
-    } else if (this.activeVertex === vertex) {
-      return ACTIVE_VERTEX_COLOR;
+    } else if (this.extractedVertex === vertex) {
+      return EXTRACTED_VERTEX_COLOR;
+    } else if (this.consideredVertex === vertex) {
+      return CONSIDERED_VERTEX_COLOR;
     } else if (this.result.hasVertex(vertex)) {
       return VISITED_VERTEX_COLOR;
     } else {
@@ -38,8 +46,10 @@ class DijkstraGraphColorer {
   }
 
   colorEdge(edge) {
-    if (this.activeEdge === edge) {
-      return ACTIVE_EDGE_COLOR;
+    if (this.consideredEdge === edge) {
+      return CONSIDERED_EDGE_COLOR;
+    } else if (this.extractedEdge === edge) {
+      return EXTRACTED_EDGE_COLOR;
     } else if (this.result.hasEdge(edge)) {
       return VISITED_EDGE_COLOR;
     } else {

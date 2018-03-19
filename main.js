@@ -3,6 +3,7 @@ const {vertices, vertexPositions } = generateGraph();
 const canvasEl = document.getElementById('graph-canvas');
 const fringePreEl = document.getElementById('fringe-pre');
 const resultPreEl = document.getElementById('result-pre');
+const actionPreEl = document.getElementById('action-pre');
 
 const graphViewer = new GraphViewer(
   canvasEl, vertices, vertexPositions, new DijkstraGraphColorer(),
@@ -27,7 +28,6 @@ document.addEventListener('keypress', (e) => {
 });
 
 function handleMessage(msg) {
-  console.log(msg);
   switch (msg.name) {
   case 'INITIAL_STATE':
     fringePreEl.innerText = JSON.stringify(msg.fringe);
@@ -38,6 +38,7 @@ function handleMessage(msg) {
         fringe: msg.fringe,
       }
     );
+    actionPreEl.innerText = JSON.stringify({ name: msg.name });
     break;
   case 'EXTRACT_ENTRY':
     fringePreEl.innerText = JSON.stringify(msg.newFringe);
@@ -46,10 +47,18 @@ function handleMessage(msg) {
       { startVertex: vertices[0],
         result: msg.newResult,
         fringe: msg.newFringe,
-        activeEdge: msg.minimumEntry.lastEdge,
-        activeVertex: msg.minimumEntry.toVertex,
+        extractedEdge: msg.minimumEntry.lastEdge,
+        extractedVertex: msg.minimumEntry.toVertex,
       }
     );
+    actionPreEl.innerText = JSON.stringify({
+      name: msg.name,
+      minimumEntry: {
+        toVertex: msg.minimumEntry.toVertex.name,
+        lastEdge: msg.minimumEntry.lastEdge && msg.minimumEntry.lastEdge.name,
+        totalCost: msg.minimumEntry.totalCost,
+      }
+    });
     break;
   case 'CONSIDER_EDGE':
     fringePreEl.innerText = JSON.stringify(msg.fringe);
@@ -58,9 +67,16 @@ function handleMessage(msg) {
       { startVertex: vertices[0],
         result: msg.result,
         fringe: msg.fringe,
-        activeEdge: msg.edge,
+        consideredEdge: msg.edge,
+        consideredVertex: msg.toVertex,
       }
     );
+    actionPreEl.innerText = JSON.stringify({
+      name: msg.name,
+      edge: msg.edge.name,
+      currentTotalCost: msg.currentTotalCost,
+      newTotalCost: msg.newTotalCost,
+    });
     break;
   case 'UPDATE_FRINGE':
     fringePreEl.innerText = JSON.stringify(msg.newFringe);
@@ -70,8 +86,14 @@ function handleMessage(msg) {
         result: msg.result,
         fringe: msg.newFringe }
     );
+    actionPreEl.innerText = JSON.stringify({
+      name: msg.name
+    });
     break;
   case 'FINAL_RESULT':
+    actionPreEl.innerText = JSON.stringify({
+      name: msg.name
+    });
     break;
   default:
     throw "Unknown message type!";

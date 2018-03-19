@@ -68,8 +68,8 @@ class Fringe {
   }
 
   addEntry(toVertex, edge, totalCost) {
-    const currentEntry = this.store.get(toVertex);
-    if (currentEntry && currentEntry.totalCost <= totalCost) {
+    const currentTotalCost = this.currentTotalCost(toVertex);
+    if (currentTotalCost && currentTotalCost <= totalCost) {
       return this;
     }
 
@@ -81,6 +81,11 @@ class Fringe {
     ));
 
     return new Fringe(newStore);
+  }
+
+  currentTotalCost(toVertex) {
+    const currentEntry = this.store.get(toVertex);
+    return currentEntry ? currentEntry.totalCost : null;
   }
 
   isEmpty() {
@@ -170,12 +175,16 @@ function* dijkstra(startVertex) {
 
     for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
       const [edge, toVertex] = evPair;
+      const currentTotalCost = fringe.currentTotalCost(toVertex);
+      const newTotalCost = minimumEntry.totalCost + edge.cost;
 
       yield {
         name: 'CONSIDER_EDGE',
         fromVertex: minimumEntry.toVertex,
         edge,
         toVertex,
+        currentTotalCost,
+        newTotalCost,
         fringe,
         result
       };
@@ -184,7 +193,6 @@ function* dijkstra(startVertex) {
         continue;
       }
 
-      const newTotalCost = minimumEntry.totalCost + edge.cost;
       newFringe = fringe.addEntry(toVertex, edge, newTotalCost);
 
       yield {
