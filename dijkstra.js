@@ -63,28 +63,34 @@ class Fringe {
     newStore.delete(minimumEntry.toVertex);
     return {
       minimumEntry,
-      newFringe: new Fringe(newStore),
+      fringe: new Fringe(newStore),
     }
   }
 
-  addEntry(toVertex, edge, totalCost) {
-    const currentTotalCost = this.currentTotalCost(toVertex);
-    if (currentTotalCost && currentTotalCost <= totalCost) {
-      return this;
+  addEntry(newEntry) {
+    const currentTotalCost = this.currentTotalCost(newEntry.toVertex);
+    if (currentTotalCost && currentTotalCost <= newEntry.totalCost) {
+      return {
+        newEntry: null,
+        fringe: this,
+      };
     }
 
     const newStore = new Map(this.store);
-    newStore.set(toVertex, new ResultEntry(
-      toVertex,
-      edge,
-      totalCost
-    ));
+    newStore.set(newEntry.toVertex, newEntry);
 
-    return new Fringe(newStore);
+    return {
+      newEntry,
+      fringe: new Fringe(newStore),
+    };
+  }
+
+  currentEntry(toVertex) {
+    return this.store.get(toVertex);
   }
 
   currentTotalCost(toVertex) {
-    const currentEntry = this.store.get(toVertex);
+    const currentEntry = this.currentEntry(toVertex);
     return currentEntry ? currentEntry.totalCost : null;
   }
 
@@ -144,11 +150,11 @@ class ResultMap {
 function* dijkstra(startVertex) {
   let result = new ResultMap();
   let fringe = new Fringe();
-  fringe = fringe.addEntry(
+  ({ fringe } = fringe.addEntry(new ResultEntry(
     startVertex,
     null,
     0
-  );
+  )));
 
   yield {
     name: 'INITIAL_STATE',
@@ -157,34 +163,36 @@ function* dijkstra(startVertex) {
   };
 
   while (!fringe.isEmpty()) {
-    let { minimumEntry, newFringe } = (
+    let minimumEntry;
+    ({ minimumEntry, fringe } = (
       fringe.extractMinimumEntry()
-    );
-    let newResult = result.addEntry(minimumEntry);
+    ));
+    result = result.addEntry(minimumEntry);
 
     yield {
       name: 'EXTRACT_ENTRY',
-      oldFringe: fringe,
-      oldResult: result,
       minimumEntry,
-      newFringe,
-      newResult,
+      fringe,
+      result,
     };
-
-    [fringe, result] = [newFringe, newResult];
 
     for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
       const [edge, toVertex] = evPair;
-      const currentTotalCost = fringe.currentTotalCost(toVertex);
+      const currentEntry = fringe.currentEntry(toVertex);
       const newTotalCost = minimumEntry.totalCost + edge.cost;
+
+      const newEntry = new ResultEntry(
+        toVertex,
+        edge,
+        newTotalCost,
+      )
 
       yield {
         name: 'CONSIDER_EDGE',
-        fromVertex: minimumEntry.toVertex,
-        edge,
-        toVertex,
-        currentTotalCost,
-        newTotalCost,
+        fromEntry: minimumEntry,
+        currentEntry: fringe.currentEntry(toVertex),
+        newEntry: newEntry,
+        newTotalCost: newTotalCost,
         fringe,
         result
       };
@@ -193,18 +201,15 @@ function* dijkstra(startVertex) {
         continue;
       }
 
-      newFringe = fringe.addEntry(toVertex, edge, newTotalCost);
+      ({ fringe } = fringe.addEntry(newEntry))
 
       yield {
         name: 'UPDATE_FRINGE',
-        edge,
-        toVertex,
-        oldFringe: fringe,
-        newFringe,
+        prevEntry: currentEntry,
+        newEntry,
+        fringe,
         result,
       };
-
-      fringe = newFringe;
     }
   }
 

@@ -12,18 +12,17 @@ graphViewer.draw();
 
 const dijkstraMessages = Array.from(dijkstra(vertices[0]));
 
-let dijkstraIndex = 0;
+let msgIndex = 0;
 handleMessage(dijkstraMessages[0]);
+const numMessages = dijkstraMessages.length;
 
 document.addEventListener('keypress', (e) => {
   if (e.key === 'j') {
-    dijkstraIndex += 1;
-    console.log(e);
-    handleMessage(dijkstraMessages[dijkstraIndex]);
+    msgIndex += (msgIndex < (numMessages - 1)) ? 1 : 0;
+    handleMessage(dijkstraMessages[msgIndex]);
   } else if (e.key === 'k') {
-    dijkstraIndex -= 1;
-    console.log(e);
-    handleMessage(dijkstraMessages[dijkstraIndex]);
+    msgIndex -= (msgIndex > 0) ? 1 : 0;
+    handleMessage(dijkstraMessages[msgIndex]);
   }
 });
 
@@ -45,12 +44,12 @@ function handleMessage(msg) {
     actionPreEl.innerText = prettyJSON({ name: msg.name });
     break;
   case 'EXTRACT_ENTRY':
-    fringePreEl.innerText = prettyJSON(msg.newFringe);
-    resultPreEl.innerText = prettyJSON(msg.newResult);
+    fringePreEl.innerText = prettyJSON(msg.fringe);
+    resultPreEl.innerText = prettyJSON(msg.result);
     graphViewer.graphColorer = new DijkstraGraphColorer(
       { startVertex: vertices[0],
-        result: msg.newResult,
-        fringe: msg.newFringe,
+        result: msg.result,
+        fringe: msg.fringe,
         extractedEdge: msg.minimumEntry.lastEdge,
         extractedVertex: msg.minimumEntry.toVertex,
       }
@@ -71,27 +70,36 @@ function handleMessage(msg) {
       { startVertex: vertices[0],
         result: msg.result,
         fringe: msg.fringe,
-        consideredEdge: msg.edge,
-        consideredVertex: msg.toVertex,
+        consideredEdge: msg.newEntry.lastEdge,
+        consideredVertex: msg.newEntry.toVertex,
       }
     );
     actionPreEl.innerText = prettyJSON({
       name: msg.name,
-      edge: msg.edge.name,
-      currentTotalCost: msg.currentTotalCost,
+      edge: msg.newEntry.lastEdge.name,
+      currentTotalCost: msg.currentEntry && msg.currentEntry.currentTotalCost,
+      costToCurrentVertex: msg.fromEntry.totalCost,
+      incrementalCost: msg.newEntry.lastEdge.cost,
       newTotalCost: msg.newTotalCost,
     });
     break;
   case 'UPDATE_FRINGE':
-    fringePreEl.innerText = prettyJSON(msg.newFringe);
+    fringePreEl.innerText = prettyJSON(msg.fringe);
     resultPreEl.innerText = prettyJSON(msg.result);
     graphViewer.graphColorer = new DijkstraGraphColorer(
       { startVertex: vertices[0],
         result: msg.result,
-        fringe: msg.newFringe }
+        fringe: msg.fringe,
+        updatedEdge: msg.newEntry.lastEdge,
+        updatedVertex: msg.newEntry.toVertex,
+      }
     );
     actionPreEl.innerText = prettyJSON({
-      name: msg.name
+      name: msg.name,
+      updatedEdge: msg.newEntry.lastEdge.name,
+      updatedVertex: msg.newEntry.toVertex.name,
+      prevCost: msg.prevEntry && msg.prevEntry.totalCost,
+      newCost: msg.newEntry.totalCost,
     });
     break;
   case 'FINAL_RESULT':
