@@ -10,8 +10,11 @@ const VERTEX_COLOR = 'rgb(0, 0, 255)';
 const VERTEX_TEXT_COLOR = 'rgb(255, 255, 255)';
 
 class GraphViewer {
-  constructor(ctx, vertices, vertexPositions) {
-    this.ctx = ctx;
+  constructor(canvasEl, vertices, vertexPositions) {
+    canvasEl.height = PIXEL_HEIGHT;
+    canvasEl.width = PIXEL_WIDTH;
+
+    this.ctx = canvasEl.getContext('2d');
 
     this.vertices = vertices;
     this.vertexPositions = new Map();
@@ -22,6 +25,8 @@ class GraphViewer {
         y: pos.y * PIXEL_HEIGHT
       });
     });
+
+    new VertexDragger(this, canvasEl);
   }
 
   draw() {
@@ -79,3 +84,5 @@ class GraphViewer {
     )
   }
 }
+
+GraphViewer.VERTEX_RADIUS = VERTEX_RADIUS;
