@@ -71,7 +71,7 @@ class Fringe {
     const currentTotalCost = this.currentTotalCost(newEntry.toVertex);
     if (currentTotalCost && currentTotalCost <= newEntry.totalCost) {
       return {
-        newEntry: null,
+        didUpdate: false,
         fringe: this,
       };
     }
@@ -80,7 +80,7 @@ class Fringe {
     newStore.set(newEntry.toVertex, newEntry);
 
     return {
-      newEntry,
+      didUpdate: true,
       fringe: new Fringe(newStore),
     };
   }
@@ -211,15 +211,17 @@ function* dijkstra(startVertex) {
         continue;
       }
 
-      ({ fringe } = fringe.addEntry(newEntry))
+      ({ didUpdate, fringe } = fringe.addEntry(newEntry))
 
-      yield {
-        name: 'UPDATE_FRINGE',
-        prevEntry: currentEntry,
-        newEntry,
-        fringe,
-        result,
-      };
+      if (didUpdate) {
+        yield {
+          name: 'UPDATE_FRINGE',
+          prevEntry: currentEntry,
+          newEntry,
+          fringe,
+          result,
+        };
+      }
     }
 
     yield {
