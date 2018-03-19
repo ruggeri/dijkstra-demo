@@ -7,6 +7,7 @@ const PADDING = 0.05;
 const MAX_GENERATE_POSITION_TRIES = 100;
 const MAX_GENERATE_GRAPH_TRIES = 10;
 const MAX_NUM_EDGES = 3;
+const COST_VARIABILITY = 3;
 
 const VERTEX_NAMES = [
   "ATL",
@@ -73,7 +74,11 @@ function addNewEdge(vertex, vertexPositions) {
     if (vertex.isNeighborTo(otherVertex)) continue;
 
     // Carefully set cost to be >= scaled distance.
-    let cost = (4/5) * MAX_COST * distance * (1 + 0.25 * seededRandom());
+    let cost = MAX_COST * distance;
+    cost *= (
+      (1 / (1 + COST_VARIABILITY))
+        * (1 + COST_VARIABILITY * seededRandom())
+    );
     cost = Math.ceil(cost * 10) / 10;
 
     new Edge(
