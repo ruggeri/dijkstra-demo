@@ -1,4 +1,4 @@
-const NUM_VERTICES = 9;
+const NUM_VERTICES = 10;
 const MAX_COST = 20;
 const MIN_DISTANCE = 0.275;
 //const MAX_EDGE_LENGTH = 1.0;
