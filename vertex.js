@@ -1,7 +1,8 @@
 class Vertex {
-  constructor(name) {
+  constructor(name, metadata) {
     this.name = name;
-    this.edges = []
+    this.edges = [];
+    this.metadata = metadata;
   }
 
   edgeVertexPairs() {

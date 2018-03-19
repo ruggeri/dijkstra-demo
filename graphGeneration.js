@@ -96,9 +96,14 @@ function tryGenerateGraph() {
   const vertexPositions = new Map();
 
   for (let idx = 0; idx < NUM_VERTICES; idx++) {
-    const vertex = new Vertex(VERTEX_NAMES[idx]);
+    const vertexPosition = generateNewPosition(vertexPositions)
+    const vertex = new Vertex(
+      VERTEX_NAMES[idx],
+      { vertexPosition }
+    );
+
     vertices.push(vertex);
-    vertexPositions.set(vertex, generateNewPosition(vertexPositions))
+    vertexPositions.set(vertex, vertexPosition);
   }
 
   for (let idx = 0; idx < MAX_NUM_EDGES; idx++) {

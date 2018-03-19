@@ -63,14 +63,14 @@ class Fringe {
   }
 
   toJSON() {
-    const result = {};
+    const json = {};
     this.store.forEach((entry, vertex) => {
-      result[vertex.name] = {
-        lastEdge: entry.lastEdge && entry.lastEdge.name,
-        totalCost: entry.totalCost,
-      }
+      const entryJSON = entry.toJSON();
+      delete entryJSON.toVertex;
+
+      json[vertex.name] = entryJSON;
     });
 
-    return result;
+    return json;
   }
 }

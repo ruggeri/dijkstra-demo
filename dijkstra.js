@@ -1,4 +1,4 @@
-function* dijkstra(startVertex) {
+function* dijkstra(startVertex, heuristic) {
   let result = new ResultMap();
   let fringe = new Fringe();
   ({ fringe } = fringe.addEntry(new ResultEntry(
@@ -30,12 +30,12 @@ function* dijkstra(startVertex) {
     for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
       const [edge, toVertex] = evPair;
       const currentEntry = fringe.currentEntry(toVertex);
-      const newTotalCost = minimumEntry.totalCost + edge.cost;
+      const newCostToVertex = minimumEntry.costToVertex + edge.cost;
 
       const newEntry = new ResultEntry(
         toVertex,
         edge,
-        newTotalCost,
+        newCostToVertex,
       )
 
       yield {
@@ -43,7 +43,6 @@ function* dijkstra(startVertex) {
         fromEntry: minimumEntry,
         currentEntry: fringe.currentEntry(toVertex),
         newEntry: newEntry,
-        newTotalCost: newTotalCost,
         fringe,
         result
       };

@@ -1,7 +1,30 @@
 class ResultEntry {
-  constructor(toVertex, lastEdge, totalCost) {
+  constructor(toVertex, lastEdge, costToVertex, heuristicCost) {
     this.toVertex = toVertex;
     this.lastEdge = lastEdge;
-    this.totalCost = totalCost;
+
+    if (heuristicCost) {
+      this.costToVertex = costToVertex;
+      this.heuristicCost = heuristicCost;
+      this.totalCost = this.costToVertex + this.heuristicCost;
+    } else {
+      this.costToVertex = costToVertex;
+      this.totalCost = costToVertex;
+    }
+  }
+
+  toJSON() {
+    const json = Object.assign({
+      toVertex: this.toVertex.name,
+      lastEdge: this.lastEdge && this.lastEdge.name,
+    });
+
+    if (this.heuristicCost) {
+      json.costToVertex = this.costToVertex;
+      json.heuristicCost = this.heuristicCost;
+    }
+    json.totalCost = this.totalCost;
+
+    return json;
   }
 }
