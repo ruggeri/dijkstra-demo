@@ -10,16 +10,16 @@ const VERTEX_COLOR = 'rgb(0, 0, 255)';
 const VERTEX_TEXT_COLOR = 'rgb(255, 255, 255)';
 
 class GraphViewer {
-  constructor(ctx, vertices) {
+  constructor(ctx, vertices, vertexPositions) {
     this.ctx = ctx;
 
     this.vertices = vertices;
     this.vertexPositions = new Map();
 
-    vertices.forEach(v => {
+    vertexPositions.forEach((pos, v) => {
       this.vertexPositions.set(v, {
-        x: Math.random() * PIXEL_WIDTH,
-        y: Math.random() * PIXEL_HEIGHT,
+        x: pos.x * PIXEL_WIDTH,
+        y: pos.y * PIXEL_HEIGHT
       });
     });
   }
