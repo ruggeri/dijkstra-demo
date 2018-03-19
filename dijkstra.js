@@ -54,7 +54,7 @@ class Fringe {
     let minimumEntry = null;
 
     this.store.forEach(entry => {
-      if (!minimumEntry || minimumEntry.totalCost < entry.totalCost) {
+      if (!minimumEntry || entry.totalCost < minimumEntry.totalCost) {
         minimumEntry = entry;
       }
     });
