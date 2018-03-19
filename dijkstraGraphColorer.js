@@ -1,16 +1,16 @@
-const CONSIDERED_EDGE_COLOR = 'rgb(255, 255, 0)';
-const DEFAULT_EDGE_COLOR = 'rgb(0, 0, 255)';
-const EXTRACTED_EDGE_COLOR = 'rgb(0, 255, 255)';
-const UPDATED_EDGE_COLOR = 'rgb(255, 0, 255)';
-const VISITED_EDGE_COLOR = 'rgb(0, 255, 0)';
+const CONSIDERED_EDGE_COLOR = 'yellow';
+const DEFAULT_EDGE_COLOR = 'black';
+const EXTRACTED_EDGE_COLOR = 'cyan';
+const UPDATED_EDGE_COLOR = 'purple';
+const VISITED_EDGE_COLOR = 'green';
 
-const CONSIDERED_VERTEX_COLOR = 'rgb(255, 255, 0)';
-const DEFAULT_VERTEX_COLOR = 'rgb(0, 0, 255)';
-const EXTRACTED_VERTEX_COLOR = 'rgb(0, 255, 255)';
-const START_VERTEX_COLOR = 'rgb(255, 0, 0)';
-const UPDATED_VERTEX_COLOR = 'rgb(255, 0, 255)';
-const VISITED_VERTEX_COLOR = 'rgb(0, 255, 0)';
-
+const CONSIDERED_VERTEX_COLOR = 'yellow';
+const DEFAULT_VERTEX_COLOR = 'black';
+const EXTRACTED_VERTEX_COLOR = 'cyan';
+const FRINGE_VERTEX_COLOR = 'blue';
+const START_VERTEX_COLOR = 'red';
+const UPDATED_VERTEX_COLOR = 'purple';
+const VISITED_VERTEX_COLOR = 'green';
 
 class DijkstraGraphColorer {
   constructor(options = {}) {
