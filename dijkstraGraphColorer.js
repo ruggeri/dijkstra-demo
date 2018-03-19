@@ -1,6 +1,7 @@
 const CONSIDERED_EDGE_COLOR = 'yellow';
 const DEFAULT_EDGE_COLOR = 'black';
 const EXTRACTED_EDGE_COLOR = 'cyan';
+const FRINGE_EDGE_COLOR = 'blue';
 const UPDATED_EDGE_COLOR = 'purple';
 const VISITED_EDGE_COLOR = 'green';
 
@@ -60,6 +61,8 @@ class DijkstraGraphColorer {
       return EXTRACTED_EDGE_COLOR;
     } else if (this.updatedEdge === edge) {
       return UPDATED_EDGE_COLOR;
+    } else if (this.fringe.hasEdge(edge)) {
+      return FRINGE_EDGE_COLOR;
     } else if (this.result.hasEdge(edge)) {
       return VISITED_EDGE_COLOR;
     } else {

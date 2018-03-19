@@ -94,6 +94,12 @@ class Fringe {
     return currentEntry ? currentEntry.totalCost : null;
   }
 
+  hasEdge(edge) {
+    return Array.from(this.store.values()).some(entry => (
+      entry.lastEdge === edge
+    ));
+  }
+
   hasVertex(toVertex) {
     return this.store.has(toVertex);
   }
