@@ -86,7 +86,7 @@ class Fringe {
   }
 
   currentEntry(toVertex) {
-    return this.store.get(toVertex);
+    return this.store.get(toVertex) || null;
   }
 
   currentTotalCost(toVertex) {

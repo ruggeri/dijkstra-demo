@@ -50,7 +50,7 @@ function handleMessage(msg) {
       name: msg.name,
       edge: msg.newEntry.lastEdge.name,
       currentTotalCost: msg.currentEntry && msg.currentEntry.currentTotalCost,
-      costToCurrentVertex: msg.fromEntry.totalCost,
+      costToPrevVertex: msg.fromEntry.totalCost,
       incrementalCost: msg.newEntry.lastEdge.cost,
       newTotalCost: msg.newTotalCost,
     });
