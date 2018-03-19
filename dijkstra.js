@@ -111,7 +111,15 @@ class ResultMap {
     return new ResultMap(newStore);
   }
 
-  has(vertex) {
+  hasEdge(edge) {
+    for (const entry of this.store.values()) {
+      if (entry.lastEdge === edge) return true;
+    }
+
+    return false;
+  }
+
+  hasVertex(vertex) {
     return this.store.has(vertex);
   }
 
@@ -161,27 +169,28 @@ function* dijkstra(startVertex) {
     [fringe, result] = [newFringe, newResult];
 
     for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
-      const [edge, newVertex] = evPair;
+      const [edge, toVertex] = evPair;
 
       yield {
         name: 'CONSIDER_EDGE',
+        fromVertex: minimumEntry.toVertex,
         edge,
-        newVertex,
+        toVertex,
         fringe,
         result
       };
 
-      if (result.has(newVertex)) {
+      if (result.hasVertex(toVertex)) {
         continue;
       }
 
       const newTotalCost = minimumEntry.totalCost + edge.cost;
-      newFringe = fringe.addEntry(newVertex, edge, newTotalCost);
+      newFringe = fringe.addEntry(toVertex, edge, newTotalCost);
 
       yield {
         name: 'UPDATE_FRINGE',
         edge,
-        newVertex,
+        toVertex,
         oldFringe: fringe,
         newFringe,
         result,

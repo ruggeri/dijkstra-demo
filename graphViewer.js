@@ -1,16 +1,13 @@
+const BACKGROUND_COLOR = 'rgb(128, 128, 128)';
+const EDGE_LINE_WIDTH = 2.5;
+const FONT_SIZE = 24;
 const PIXEL_HEIGHT = 768;
 const PIXEL_WIDTH = 1024;
 const VERTEX_RADIUS = 25;
-
-const BACKGROUND_COLOR = 'rgb(128, 128, 128)';
-const EDGE_COLOR = 'rgb(255, 0, 0)';
-const EDGE_LINE_WIDTH = 2.5;
-const FONT_SIZE = 24;
-const VERTEX_COLOR = 'rgb(0, 0, 255)';
 const VERTEX_TEXT_COLOR = 'rgb(255, 255, 255)';
 
 class GraphViewer {
-  constructor(canvasEl, vertices, vertexPositions) {
+  constructor(canvasEl, vertices, vertexPositions, graphColorer) {
     canvasEl.height = PIXEL_HEIGHT;
     canvasEl.width = PIXEL_WIDTH;
 
@@ -27,6 +24,7 @@ class GraphViewer {
     });
 
     new VertexDragger(this, canvasEl);
+    this.graphColorer = graphColorer;
   }
 
   draw() {
@@ -53,7 +51,7 @@ class GraphViewer {
   drawVertex(vertex) {
     const position = this.vertexPositions.get(vertex);
 
-    this.ctx.fillStyle = VERTEX_COLOR;
+    this.ctx.fillStyle = this.graphColorer.colorVertex(vertex);
     this.ctx.beginPath();
     this.ctx.arc(position.x, position.y, VERTEX_RADIUS, 0, 2 * Math.PI);
     this.ctx.fill();
@@ -66,7 +64,7 @@ class GraphViewer {
     const endPosition = this.vertexPositions.get(edge.vertices[1]);
 
     this.ctx.lineWidth = EDGE_LINE_WIDTH;
-    this.ctx.strokeStyle = EDGE_COLOR;
+    this.ctx.strokeStyle = this.graphColorer.colorEdge(edge);
 
     this.ctx.beginPath();
     this.ctx.moveTo(startPosition.x, startPosition.y);
