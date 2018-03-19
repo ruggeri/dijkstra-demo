@@ -3,7 +3,6 @@ setRandomSeed(1);
 const NUM_VERTICES = 10;
 const MAX_COST = 20;
 const MIN_DISTANCE = 0.275;
-//const MAX_EDGE_LENGTH = 1.0;
 const PADDING = 0.05;
 const MAX_GENERATE_POSITION_TRIES = 100;
 const MAX_GENERATE_GRAPH_TRIES = 10;
@@ -72,11 +71,14 @@ function addNewEdge(vertex, vertexPositions) {
 
     if (otherVertex.edges.length >= MAX_NUM_EDGES) continue;
     if (vertex.isNeighborTo(otherVertex)) continue;
-    //if (distance > MAX_EDGE_LENGTH) continue;
+
+    // Carefully set cost to be >= scaled distance.
+    let cost = (4/5) * MAX_COST * distance * (1 + 0.25 * seededRandom());
+    cost = Math.ceil(cost * 10) / 10;
 
     new Edge(
       `${vertex.name}_${otherVertex.name}`,
-      1 + Math.round((MAX_COST - 1) * seededRandom()),
+      cost,
       vertex,
       otherVertex
     );
