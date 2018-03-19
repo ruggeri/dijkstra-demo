@@ -26,6 +26,7 @@ class DijkstraGraphColorer {
       fringe: new Fringe(),
       consideredEdge: null,
       consideredVertex: null,
+      extractedEdge: null,
       extractedVertex: null,
       updatedEdge: null,
       updatedVertex: null,
