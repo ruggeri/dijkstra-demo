@@ -1,10 +1,12 @@
-const BACKGROUND_COLOR = 'rgb(128, 128, 128)';
+const BACKGROUND_COLOR = 'gray';
+const EDGE_FONT_SIZE = 20;
 const EDGE_LINE_WIDTH = 2.5;
-const FONT_SIZE = 24;
+const EDGE_TEXT_COLOR = 'white';
 const PIXEL_HEIGHT = 768;
 const PIXEL_WIDTH = 1024;
+const VERTEX_FONT_SIZE = 24;
 const VERTEX_RADIUS = 25;
-const VERTEX_TEXT_COLOR = 'rgb(255, 255, 255)';
+const VERTEX_TEXT_COLOR = 'white';
 
 class GraphViewer {
   constructor(canvasEl, vertices, vertexPositions, graphColorer) {
@@ -37,8 +39,8 @@ class GraphViewer {
     this.vertices.forEach(vertex => this.drawVertex(vertex));
   }
 
-  writeText(text, position, fontColor = 'rgb(0, 0, 0)') {
-    this.ctx.font = `${FONT_SIZE}px monospace`;
+  writeText(text, position, fontSize, fontColor) {
+    this.ctx.font = `${fontSize}px monospace`;
     this.ctx.fillStyle = fontColor;
     const textWidth = this.ctx.measureText(text).width;
     this.ctx.fillText(
@@ -56,7 +58,9 @@ class GraphViewer {
     this.ctx.arc(position.x, position.y, VERTEX_RADIUS, 0, 2 * Math.PI);
     this.ctx.fill();
 
-    this.writeText(vertex.name, position, VERTEX_TEXT_COLOR);
+    this.writeText(
+      vertex.name, position, VERTEX_FONT_SIZE, VERTEX_TEXT_COLOR
+    );
   }
 
   drawEdge(edge) {
@@ -76,9 +80,12 @@ class GraphViewer {
       y: (startPosition.y + endPosition.y) / 2,
     };
 
+
     this.writeText(
       `${edge.name}: $${edge.cost}`,
       halfwayPosition,
+      EDGE_FONT_SIZE,
+      EDGE_TEXT_COLOR,
     )
   }
 }
