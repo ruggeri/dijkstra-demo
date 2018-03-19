@@ -8,30 +8,48 @@ const VERTEX_TEXT_COLOR = 'white';
 
 class GraphViewer {
   constructor(canvasEl, vertices, vertexPositions, graphColorer) {
-    this.canvasHeight = parseInt(getComputedStyle(canvasEl).height);
-    this.canvasWidth = parseInt(getComputedStyle(canvasEl).width);
-    canvasEl.height = this.canvasHeight;
-    canvasEl.width = this.canvasWidth;
+    this.canvasEl = canvasEl;
+    this.canvasEl.height = this.canvasDimensions().height;
+    this.canvasEl.width = this.canvasDimensions().width;
 
     this.ctx = canvasEl.getContext('2d');
 
     this.vertices = vertices;
-    this.vertexPositions = new Map();
-
-    vertexPositions.forEach((pos, v) => {
-      this.vertexPositions.set(v, {
-        x: pos.x * this.canvasWidth,
-        y: pos.y * this.canvasHeight,
-      });
-    });
+    this.vertexPositions = vertexPositions;
 
     new VertexDragger(this, canvasEl);
     this.graphColorer = graphColorer;
+
+    window.addEventListener('resize', () => this.onResize());
+  }
+
+  canvasDimensions() {
+    return {
+      height: parseInt(getComputedStyle(canvasEl).height),
+      width: parseInt(getComputedStyle(canvasEl).width)
+    };
+  }
+
+  onResize() {
+    this.canvasEl.height = this.canvasDimensions().height;
+    this.canvasEl.width = this.canvasDimensions().width;
+    this.draw();
+  }
+
+  position(vertex) {
+    const position = this.vertexPositions.get(vertex);
+    return {
+      x: position.x * this.canvasDimensions().width,
+      y: position.y * this.canvasDimensions().height
+    };
   }
 
   draw() {
     this.ctx.fillStyle = BACKGROUND_COLOR;
-    this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+    this.ctx.fillRect(
+      0, 0,
+      this.canvasDimensions().width, this.canvasDimensions().height
+    );
 
     this.vertices.forEach(vertex => {
       vertex.edges.forEach(e => this.drawEdge(e));
@@ -51,7 +69,7 @@ class GraphViewer {
   }
 
   drawVertex(vertex) {
-    const position = this.vertexPositions.get(vertex);
+    const position = this.position(vertex);
 
     this.ctx.fillStyle = this.graphColorer.colorVertex(vertex);
     this.ctx.beginPath();
@@ -64,8 +82,8 @@ class GraphViewer {
   }
 
   drawEdge(edge) {
-    const startPosition = this.vertexPositions.get(edge.vertices[0]);
-    const endPosition = this.vertexPositions.get(edge.vertices[1]);
+    const startPosition = this.position(edge.vertices[0]);
+    const endPosition = this.position(edge.vertices[1]);
 
     this.ctx.lineWidth = EDGE_LINE_WIDTH;
     this.ctx.strokeStyle = this.graphColorer.colorEdge(edge);

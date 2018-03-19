@@ -10,8 +10,8 @@ class VertexDragger {
 
   selectedVertex(mousePosition) {
     let selectedVertex = null;
-    for (let entry of this.graphViewer.vertexPositions) {
-      const [vertex, position] = entry;
+    for (let vertex of this.graphViewer.vertices) {
+      const position = this.graphViewer.position(vertex);
       if (distance(position, mousePosition) < GraphViewer.VERTEX_RADIUS) {
         selectedVertex = vertex;
         break
@@ -30,7 +30,10 @@ class VertexDragger {
   onMove(e) {
     if (!this.activeVertex) return;
 
-    const mousePosition = { x: e.offsetX, y: e.offsetY };
+    const mousePosition = {
+      x: e.offsetX / this.graphViewer.canvasDimensions().width,
+      y: e.offsetY / this.graphViewer.canvasDimensions().height,
+    };
     this.graphViewer.vertexPositions.set(
       this.activeVertex, mousePosition
     );
