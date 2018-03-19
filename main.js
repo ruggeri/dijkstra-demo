@@ -103,6 +103,12 @@ function handleMessage(msg) {
     });
     break;
   case 'FINAL_RESULT':
+    graphViewer.graphColorer = new DijkstraGraphColorer(
+      { startVertex: vertices[0],
+        result: msg.result,
+        fringe: msg.fringe,
+      }
+    );
     actionPreEl.innerText = prettyJSON({
       name: msg.name
     });
