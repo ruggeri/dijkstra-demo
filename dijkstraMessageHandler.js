@@ -3,29 +3,24 @@ function prettyJSON(object) {
 }
 
 function handleMessage(msg) {
+  graphViewer.graphColorer.clear();
+  graphViewer.graphColorer.set({
+    startVertex: vertices[0],
+    result: msg.result,
+    fringe: msg.fringe,
+  });
+
+  fringePreEl.innerText = prettyJSON(msg.fringe);
+  resultPreEl.innerText = prettyJSON(msg.result);
   switch (msg.name) {
   case 'INITIAL_STATE':
-    fringePreEl.innerText = prettyJSON(msg.fringe);
-    resultPreEl.innerText = prettyJSON(msg.result);
-    graphViewer.graphColorer = new DijkstraGraphColorer(
-      { startVertex: vertices[0],
-        result: msg.result,
-        fringe: msg.fringe,
-      }
-    );
     actionPreEl.innerText = prettyJSON({ name: msg.name });
     break;
   case 'EXTRACT_ENTRY':
-    fringePreEl.innerText = prettyJSON(msg.fringe);
-    resultPreEl.innerText = prettyJSON(msg.result);
-    graphViewer.graphColorer = new DijkstraGraphColorer(
-      { startVertex: vertices[0],
-        result: msg.result,
-        fringe: msg.fringe,
-        extractedEdge: msg.minimumEntry.lastEdge,
-        extractedVertex: msg.minimumEntry.toVertex,
-      }
-    );
+    graphViewer.graphColorer.set({
+      extractedEdge: msg.minimumEntry.lastEdge,
+      extractedVertex: msg.minimumEntry.toVertex,
+    });
     actionPreEl.innerText = prettyJSON({
       name: msg.name,
       minimumEntry: {
@@ -36,16 +31,10 @@ function handleMessage(msg) {
     });
     break;
   case 'CONSIDER_EDGE':
-    fringePreEl.innerText = prettyJSON(msg.fringe);
-    resultPreEl.innerText = prettyJSON(msg.result);
-    graphViewer.graphColorer = new DijkstraGraphColorer(
-      { startVertex: vertices[0],
-        result: msg.result,
-        fringe: msg.fringe,
-        consideredEdge: msg.newEntry.lastEdge,
-        consideredVertex: msg.newEntry.toVertex,
-      }
-    );
+    graphViewer.graphColorer.set({
+      consideredEdge: msg.newEntry.lastEdge,
+      consideredVertex: msg.newEntry.toVertex,
+    });
     actionPreEl.innerText = prettyJSON({
       name: msg.name,
       edge: msg.newEntry.lastEdge.name,
@@ -56,16 +45,10 @@ function handleMessage(msg) {
     });
     break;
   case 'UPDATE_FRINGE':
-    fringePreEl.innerText = prettyJSON(msg.fringe);
-    resultPreEl.innerText = prettyJSON(msg.result);
-    graphViewer.graphColorer = new DijkstraGraphColorer(
-      { startVertex: vertices[0],
-        result: msg.result,
-        fringe: msg.fringe,
-        updatedEdge: msg.newEntry.lastEdge,
-        updatedVertex: msg.newEntry.toVertex,
-      }
-    );
+    graphViewer.graphColorer.set({
+      updatedEdge: msg.newEntry.lastEdge,
+      updatedVertex: msg.newEntry.toVertex,
+    });
     actionPreEl.innerText = prettyJSON({
       name: msg.name,
       updatedEdge: msg.newEntry.lastEdge.name,
@@ -75,12 +58,6 @@ function handleMessage(msg) {
     });
     break;
   case 'FINAL_RESULT':
-    graphViewer.graphColorer = new DijkstraGraphColorer(
-      { startVertex: vertices[0],
-        result: msg.result,
-        fringe: msg.fringe,
-      }
-    );
     actionPreEl.innerText = prettyJSON({
       name: msg.name
     });

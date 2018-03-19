@@ -13,28 +13,26 @@ const UPDATED_VERTEX_COLOR = 'purple';
 const VISITED_VERTEX_COLOR = 'green';
 
 class DijkstraGraphColorer {
-  constructor(options = {}) {
-    const {
-      startVertex,
-      result,
-      fringe,
-      consideredEdge,
-      consideredVertex,
-      extractedEdge,
-      extractedVertex,
-      updatedEdge,
-      updatedVertex,
-    } = options;
+  constructor(options) {
+    this.clear();
+    this.set(options);
+  }
 
-    this.startVertex = startVertex;
-    this.result = result || new ResultMap();
-    this.fringe = fringe || new Fringe();
-    this.consideredEdge = consideredEdge;
-    this.consideredVertex = consideredVertex;
-    this.extractedEdge = extractedEdge;
-    this.extractedVertex = extractedVertex;
-    this.updatedEdge = updatedEdge;
-    this.updatedVertex = updatedVertex;
+  clear() {
+    Object.assign(this, {
+      startVertex: null,
+      result: new ResultMap(),
+      fringe: new Fringe(),
+      consideredEdge: null,
+      consideredVertex: null,
+      extractedVertex: null,
+      updatedEdge: null,
+      updatedVertex: null,
+    });
+  }
+
+  set(options) {
+    Object.assign(this, options);
   }
 
   colorVertex(vertex) {
@@ -48,6 +46,8 @@ class DijkstraGraphColorer {
       return CONSIDERED_VERTEX_COLOR;
     } else if (this.result.hasVertex(vertex)) {
       return VISITED_VERTEX_COLOR;
+    } else if (this.fringe.hasVertex(vertex)) {
+      return FRINGE_VERTEX_COLOR;
     } else {
       return DEFAULT_VERTEX_COLOR;
     }
