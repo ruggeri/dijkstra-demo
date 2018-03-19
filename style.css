@@ -1,0 +1,17 @@
+body {
+  display: flex;
+  flex-direction: row;
+  font-family: sans-serif;
+  height: 90vh;
+  width: 90vw;
+}
+
+section {
+  padding: 0px 10px;
+  flex: 1;
+}
+
+canvas {
+  width: 1024px;
+  height: 768px;
+}
