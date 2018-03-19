@@ -94,6 +94,10 @@ class Fringe {
     return currentEntry ? currentEntry.totalCost : null;
   }
 
+  hasVertex(toVertex) {
+    return this.store.has(toVertex);
+  }
+
   isEmpty() {
     return this.store.size == 0;
   }
