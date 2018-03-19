@@ -25,7 +25,6 @@ class VertexDragger {
   onDown(e) {
     const mousePosition = { x: e.offsetX, y: e.offsetY };
     this.activeVertex = this.selectedVertex(mousePosition);
-    console.log(this.activeVertex);
   }
 
   onMove(e) {
