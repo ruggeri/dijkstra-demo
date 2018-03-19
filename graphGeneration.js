@@ -1,9 +1,23 @@
-const NUM_VERTICES = 7;
+const NUM_VERTICES = 9;
 const MAX_COST = 20;
 const MIN_DISTANCE = 0.275;
+//const MAX_EDGE_LENGTH = 1.0;
 const PADDING = 0.05;
 const MAX_GENERATE_POSITION_TRIES = 100;
-const NUM_EDGES = 3;
+const MAX_NUM_EDGES = 3;
+
+const VERTEX_NAMES = [
+  "ATL",
+  "LAX",
+  "ORD",
+  "DFW",
+  "JFK",
+  "DEN",
+  "SFO",
+  "LAS",
+  "CLT",
+  "SEA",
+];
 
 function distance(position1, position2) {
   return Math.sqrt(
@@ -52,7 +66,11 @@ function neighborsByDistance(vertex, vertexPositions) {
 function addNewEdge(vertex, vertexPositions) {
   for (const entry of neighborsByDistance(vertex, vertexPositions)) {
     const { vertex: otherVertex, distance } = entry;
+
+    if (otherVertex.edges.length >= MAX_NUM_EDGES) continue;
     if (vertex.isNeighborTo(otherVertex)) continue;
+    //if (distance > MAX_EDGE_LENGTH) continue;
+
     new Edge(
       `${vertex.name}_${otherVertex.name}`,
       1 + Math.round((MAX_COST - 1) * Math.random()),
@@ -68,15 +86,14 @@ function generateGraph() {
   const vertexPositions = new Map();
 
   for (let idx = 0; idx < NUM_VERTICES; idx++) {
-    const vertex = new Vertex(`v${idx}`);
+    const vertex = new Vertex(VERTEX_NAMES[idx]);
     vertices.push(vertex);
     vertexPositions.set(vertex, generateNewPosition(vertexPositions))
   }
 
-
-  for (let idx = 0; idx < NUM_EDGES; idx++) {
+  for (let idx = 0; idx < MAX_NUM_EDGES; idx++) {
     vertices.forEach(vertex => {
-      if (vertex.edges.length >= 3) return;
+      if (vertex.edges.length >= MAX_NUM_EDGES) return;
       addNewEdge(vertex, vertexPositions);
     });
   }
