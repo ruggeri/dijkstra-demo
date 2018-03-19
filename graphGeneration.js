@@ -1,3 +1,5 @@
+setRandomSeed(1);
+
 const NUM_VERTICES = 10;
 const MAX_COST = 20;
 const MIN_DISTANCE = 0.275;
@@ -30,8 +32,8 @@ function distance(position1, position2) {
 function generateNewPosition(vertexPositions) {
   for (let tryNum = 0; tryNum < MAX_GENERATE_POSITION_TRIES; tryNum++) {
     const newPosition = {
-      x: PADDING + (Math.random() * (1 - 2*PADDING)),
-      y: PADDING + (Math.random() * (1 - 2*PADDING))
+      x: PADDING + (seededRandom() * (1 - 2*PADDING)),
+      y: PADDING + (seededRandom() * (1 - 2*PADDING))
     };
     let tooClose = false;
     vertexPositions.forEach(otherPosition => {
@@ -74,7 +76,7 @@ function addNewEdge(vertex, vertexPositions) {
 
     new Edge(
       `${vertex.name}_${otherVertex.name}`,
-      1 + Math.round((MAX_COST - 1) * Math.random()),
+      1 + Math.round((MAX_COST - 1) * seededRandom()),
       vertex,
       otherVertex
     );
