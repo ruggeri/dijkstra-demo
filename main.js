@@ -10,7 +10,9 @@ const graphViewer = new GraphViewer(
 );
 graphViewer.draw();
 
-const dijkstraMessages = Array.from(dijkstra(vertices[0]));
+const dijkstraMessages = Array.from(
+  dijkstra(vertices[0], (vertex) => 0)
+);
 
 let msgIndex = 0;
 handleMessage(dijkstraMessages[0]);

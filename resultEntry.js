@@ -3,7 +3,7 @@ class ResultEntry {
     this.toVertex = toVertex;
     this.lastEdge = lastEdge;
 
-    if (heuristicCost) {
+    if (heuristicCost !== null) {
       this.costToVertex = costToVertex;
       this.heuristicCost = heuristicCost;
       this.totalCost = this.costToVertex + this.heuristicCost;
@@ -19,7 +19,7 @@ class ResultEntry {
       lastEdge: this.lastEdge && this.lastEdge.name,
     });
 
-    if (this.heuristicCost) {
+    if (this.heuristicCost !== null) {
       json.costToVertex = this.costToVertex;
       json.heuristicCost = this.heuristicCost;
     }

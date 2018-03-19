@@ -41,7 +41,8 @@ function handleMessage(msg) {
       currentTotalCost: msg.currentEntry && msg.currentEntry.currentTotalCost,
       costToPrevVertex: msg.fromEntry.totalCost,
       incrementalCost: msg.newEntry.lastEdge.cost,
-      newTotalCost: msg.newTotalCost,
+      heuristicCost: msg.newEntry.heuristicCost,
+      newTotalCost: msg.newEntry.totalCost,
     });
     break;
   case 'UPDATE_FRINGE':
