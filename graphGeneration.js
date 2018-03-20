@@ -1,13 +1,13 @@
 setRandomSeed(1);
 
 const NUM_VERTICES = 10;
-const MAX_COST = 20;
 const MIN_DISTANCE = 0.275;
 const PADDING = 0.05;
 const MAX_GENERATE_POSITION_TRIES = 100;
 const MAX_GENERATE_GRAPH_TRIES = 10;
 const MAX_NUM_EDGES = 3;
-const COST_VARIABILITY = 3;
+const COST_VARIABILITY = 1;
+const COST_SCALER = 10;
 
 const VERTEX_NAMES = [
   "ATL",
@@ -73,12 +73,8 @@ function addNewEdge(vertex, vertexPositions) {
     if (otherVertex.edges.length >= MAX_NUM_EDGES) continue;
     if (vertex.isNeighborTo(otherVertex)) continue;
 
-    // Carefully set cost to be >= scaled distance.
-    let cost = MAX_COST * distance;
-    cost *= (
-      (1 / (1 + COST_VARIABILITY))
-        * (1 + COST_VARIABILITY * seededRandom())
-    );
+    let cost = COST_SCALER * distance;
+    cost *= 1 + (COST_VARIABILITY * seededRandom());
     cost = Math.ceil(cost * 10) / 10;
 
     new Edge(
@@ -89,6 +85,13 @@ function addNewEdge(vertex, vertexPositions) {
     );
     break;
   };
+}
+
+function heuristic(vertex1, vertex2) {
+  const vertexPosition1 = vertex1.metadata.vertexPosition;
+  const vertexPosition2 = vertex2.metadata.vertexPosition;
+  let cost = COST_SCALER * distance(vertexPosition1, vertexPosition2);
+  return Math.ceil(cost * 10) / 10;
 }
 
 function tryGenerateGraph() {
@@ -113,7 +116,18 @@ function tryGenerateGraph() {
     });
   }
 
-  return { vertices, vertexPositions };
+  const startVertex = vertices[0];
+  let goalVertex = startVertex;
+  let goalDistance = 0.0;
+  for (const vertex of vertices) {
+    const newDistance = heuristic(startVertex, vertex);
+    if (newDistance > goalDistance) {
+      goalVertex = vertex;
+      goalDistance = newDistance;
+    }
+  }
+
+  return { vertices, vertexPositions, startVertex, goalVertex };
 }
 
 function generateGraph() {

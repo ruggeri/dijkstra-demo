@@ -9,6 +9,7 @@ const CONSIDERED_VERTEX_COLOR = 'yellow';
 const DEFAULT_VERTEX_COLOR = 'black';
 const EXTRACTED_VERTEX_COLOR = 'cyan';
 const FRINGE_VERTEX_COLOR = 'blue';
+const GOAL_VERTEX_COLOR = 'white';
 const START_VERTEX_COLOR = 'red';
 const UPDATED_VERTEX_COLOR = 'purple';
 const VISITED_VERTEX_COLOR = 'green';
@@ -22,6 +23,7 @@ class DijkstraGraphColorer {
   clear() {
     Object.assign(this, {
       startVertex: null,
+      goalVertex: null,
       result: new ResultMap(),
       fringe: new Fringe(),
       consideredEdge: null,
@@ -40,6 +42,8 @@ class DijkstraGraphColorer {
   colorVertex(vertex) {
     if (this.startVertex === vertex) {
       return START_VERTEX_COLOR;
+    } else if (this.goalVertex === vertex) {
+      return GOAL_VERTEX_COLOR;
     } else if (this.extractedVertex === vertex) {
       return EXTRACTED_VERTEX_COLOR;
     } else if (this.updatedVertex === vertex) {

@@ -2,10 +2,11 @@ function prettyJSON(object) {
   return JSON.stringify(object, null, 4);
 }
 
-function handleMessage(msg) {
+function handleMessage(msg, startVertex, goalVertex) {
   graphViewer.graphColorer.clear();
   graphViewer.graphColorer.set({
-    startVertex: vertices[0],
+    startVertex: startVertex,
+    goalVertex: goalVertex,
     result: msg.result,
     fringe: msg.fringe,
   });
@@ -39,7 +40,7 @@ function handleMessage(msg) {
       name: msg.name,
       edge: msg.newEntry.lastEdge.name,
       currentTotalCost: msg.currentEntry && msg.currentEntry.currentTotalCost,
-      costToPrevVertex: msg.fromEntry.totalCost,
+      costToPrevVertex: msg.fromEntry.costToVertex,
       incrementalCost: msg.newEntry.lastEdge.cost,
       heuristicCost: msg.newEntry.heuristicCost,
       newTotalCost: msg.newEntry.totalCost,
