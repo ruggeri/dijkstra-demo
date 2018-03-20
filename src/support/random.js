@@ -20,3 +20,8 @@ function seededRandom()
     result /= 4294967296;
     return result + 0.5;
 }
+
+module.exports = {
+  setRandomSeed,
+  seededRandom,
+};

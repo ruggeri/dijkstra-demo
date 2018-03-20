@@ -1,13 +1,23 @@
-setRandomSeed(1);
+const {
+  COST_SCALER,
+  COST_VARIABILITY,
+  MAX_GENERATE_GRAPH_TRIES,
+  MAX_GENERATE_POSITION_TRIES,
+  MAX_NUM_EDGES,
+  MIN_DISTANCE,
+  NUM_VERTICES,
+  PADDING,
+} = require('./constants');
+const {
+  distance,
+  mostDistantVertex,
+  vertexDistance,
+  verticesByDistance,
+} = require('./distance');
+const { setRandomSeed, seededRandom } = require('../random');
 
-const NUM_VERTICES = 10;
-const MIN_DISTANCE = 0.275;
-const PADDING = 0.05;
-const MAX_GENERATE_POSITION_TRIES = 100;
-const MAX_GENERATE_GRAPH_TRIES = 10;
-const MAX_NUM_EDGES = 3;
-const COST_VARIABILITY = 1;
-const COST_SCALER = 10;
+// Set a seed that seems to work well.
+setRandomSeed(1);
 
 const VERTEX_NAMES = [
   "ATL",
@@ -22,19 +32,16 @@ const VERTEX_NAMES = [
   "SEA",
 ];
 
-function distance(position1, position2) {
-  return Math.sqrt(
-    ((position1.x - position2.x) ** 2)
-      + ((position1.y - position2.y) ** 2)
-  );
-}
-
+// Try to find a position to place a vertex on the canvas.
 function generateNewPosition(vertexPositions) {
   for (let tryNum = 0; tryNum < MAX_GENERATE_POSITION_TRIES; tryNum++) {
+    // Keep away from the edges.
     const newPosition = {
       x: PADDING + (seededRandom() * (1 - 2*PADDING)),
       y: PADDING + (seededRandom() * (1 - 2*PADDING))
     };
+
+    // Don't let any vertex be too close.
     let tooClose = false;
     vertexPositions.forEach(otherPosition => {
       if (distance(newPosition, otherPosition) < MIN_DISTANCE) {
@@ -45,38 +52,34 @@ function generateNewPosition(vertexPositions) {
     if (!tooClose) return newPosition;
   }
 
+  // Sometimes our greedy algorithm backs us into a corner where there
+  // is no good position left...
   throw "Maxed out position tries";
 }
 
-function neighborsByDistance(vertex, vertexPositions) {
-  const position = vertexPositions.get(vertex);
-  const neighbors = []
-  vertexPositions.forEach((otherPosition, otherVertex) => {
-    if (vertex === otherVertex) return;
-    neighbors.push({
-      vertex: otherVertex,
-      distance: distance(position, otherPosition),
-    });
-  });
-
-  neighbors.sort((e1, e2) => {
-    return e1.distance - e2.distance;
-  });
-
-  return neighbors;
-}
-
-function addNewEdge(vertex, vertexPositions) {
-  for (const entry of neighborsByDistance(vertex, vertexPositions)) {
+function generateEdge(vertex, vertexPositions) {
+  // Prefer adding edges to closer vertices. This prevents edge
+  // "crossings" in the graph visualization.
+  for (const entry of verticesByDistance(vertex, vertexPositions)) {
     const { vertex: otherVertex, distance } = entry;
 
-    if (otherVertex.edges.length >= MAX_NUM_EDGES) continue;
+    // Skip if an edge already exists between the two.
     if (vertex.isNeighborTo(otherVertex)) continue;
+    // Skip if the other vertex has too many edges already.
+    if (otherVertex.edges.length >= MAX_NUM_EDGES) continue;
 
+    // The cost is:
+    // (1) The straight line distance, scaled up to a human friendly
+    //     scale,
+    // (2) Magnified by a random amount. E.g., maybe there are
+    //     mountains between two cities so it takes longer to travel
+    //     than normal. How much variation is controllable.
+    // (3) Rounded off.
     let cost = COST_SCALER * distance;
     cost *= 1 + (COST_VARIABILITY * seededRandom());
     cost = Math.ceil(cost * 10) / 10;
 
+    // Create the edge.
     new Edge(
       `${vertex.name}_${otherVertex.name}`,
       cost,
@@ -85,21 +88,19 @@ function addNewEdge(vertex, vertexPositions) {
     );
     break;
   };
-}
 
-function heuristic(vertex1, vertex2) {
-  const vertexPosition1 = vertex1.metadata.vertexPosition;
-  const vertexPosition2 = vertex2.metadata.vertexPosition;
-  let cost = COST_SCALER * distance(vertexPosition1, vertexPosition2);
-  return Math.ceil(cost * 10) / 10;
+  // Sometimes we can't find anyone to make an edge with. Oh well.
 }
 
 function tryGenerateGraph() {
   const vertices = [];
   const vertexPositions = new Map();
 
+  // Generate all the vertices.
   for (let idx = 0; idx < NUM_VERTICES; idx++) {
+    // Generate a location for this vertex on the canvas.
     const vertexPosition = generateNewPosition(vertexPositions)
+    // Create a new vertex; record as metadata its position.
     const vertex = new Vertex(
       VERTEX_NAMES[idx],
       { vertexPosition }
@@ -109,29 +110,24 @@ function tryGenerateGraph() {
     vertexPositions.set(vertex, vertexPosition);
   }
 
+  // Generate all the edges.
   for (let idx = 0; idx < MAX_NUM_EDGES; idx++) {
     vertices.forEach(vertex => {
       if (vertex.edges.length >= MAX_NUM_EDGES) return;
-      addNewEdge(vertex, vertexPositions);
+      generateEdge(vertex, vertexPositions);
     });
   }
 
   const startVertex = vertices[0];
-  let goalVertex = startVertex;
-  let goalDistance = 0.0;
-  for (const vertex of vertices) {
-    const newDistance = heuristic(startVertex, vertex);
-    if (newDistance > goalDistance) {
-      goalVertex = vertex;
-      goalDistance = newDistance;
-    }
-  }
+  // For A* search, choose as goal vertex the most distance of all
+  // vertices.
+  const goalVertex = mostDistantVertex(startVertex);
 
   return { vertices, vertexPositions, startVertex, goalVertex };
 }
 
 function generateGraph() {
-  for (let idx = 0; idx < MAX_GENERATE_GRAPH_TRIES; idx++) {
+  for (const idx = 0; idx < MAX_GENERATE_GRAPH_TRIES; idx++) {
     try {
       const graph = tryGenerateGraph();
       console.log("Successfully generated graph");
@@ -143,3 +139,9 @@ function generateGraph() {
 
   throw "Maxed out graph tries";
 }
+
+module.exports = {
+  generateGraph,
+  // Also export vertexDistance for use as an A* heuristic.
+  heuristic: vertexDistance,
+};
