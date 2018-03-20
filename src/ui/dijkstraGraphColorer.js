@@ -75,3 +75,5 @@ class DijkstraGraphColorer {
     }
   }
 }
+
+module.exports = DijkstraGraphColorer;

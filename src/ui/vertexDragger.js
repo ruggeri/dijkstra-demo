@@ -1,7 +1,8 @@
 class VertexDragger {
-  constructor(graphViewer, canvasEl) {
+  constructor(graphViewer, canvasEl, vertexRadius) {
     this.canvasEl = canvasEl;
     this.graphViewer = graphViewer;
+    this.vertexRadius = vertexRadius;
 
     this.canvasEl.addEventListener('mousedown', (e) => this.onDown(e));
     this.canvasEl.addEventListener('mousemove', (e) => this.onMove(e));
@@ -12,7 +13,7 @@ class VertexDragger {
     let selectedVertex = null;
     for (let vertex of this.graphViewer.vertices) {
       const position = this.graphViewer.position(vertex);
-      if (distance(position, mousePosition) < GraphViewer.VERTEX_RADIUS) {
+      if (distance(position, mousePosition) < this.vertexRadius) {
         selectedVertex = vertex;
         break
       }
@@ -20,7 +21,6 @@ class VertexDragger {
 
     return selectedVertex;
   }
-
 
   onDown(e) {
     const mousePosition = { x: e.offsetX, y: e.offsetY };
@@ -44,3 +44,5 @@ class VertexDragger {
     this.activeVertex = null;
   }
 }
+
+module.exports = VertexDragger;

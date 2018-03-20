@@ -1,4 +1,5 @@
-const { generateGraph } = require('./support/graphGeneration');
+const { generateGraph, heuristic } = require('./support/graphGeneration');
+const DijkstraGraphColorer = require('./ui/DijkstraGraphColorer');
 const handleMessage = require('./ui/dijkstraMessageHandler');
 
 // Generate the graph.

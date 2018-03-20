@@ -1,3 +1,5 @@
+const VertexDragger = require('./vertexDragger');
+
 const BACKGROUND_COLOR = 'gray';
 const EDGE_FONT_SIZE = 20;
 const EDGE_LINE_WIDTH = 2.5;
@@ -17,7 +19,7 @@ class GraphViewer {
     this.vertices = vertices;
     this.vertexPositions = vertexPositions;
 
-    new VertexDragger(this, canvasEl);
+    this.vertexDragger = new VertexDragger(this, canvasEl, VERTEX_RADIUS);
     this.graphColorer = graphColorer;
 
     window.addEventListener('resize', () => this.onResize());
@@ -108,4 +110,4 @@ class GraphViewer {
   }
 }
 
-GraphViewer.VERTEX_RADIUS = VERTEX_RADIUS;
+module.exports = GraphViewer;

@@ -13,6 +13,7 @@ function handleMessage(msg, startVertex, goalVertex) {
 
   fringePreEl.innerText = prettyJSON(msg.fringe);
   resultPreEl.innerText = prettyJSON(msg.result);
+
   switch (msg.name) {
   case 'INITIAL_STATE':
     actionPreEl.innerText = prettyJSON({ name: msg.name });
@@ -75,3 +76,5 @@ function handleMessage(msg, startVertex, goalVertex) {
 
   graphViewer.draw();
 }
+
+module.exports = handleMessage;
