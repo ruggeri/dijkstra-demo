@@ -15,3 +15,5 @@ class Vertex {
     return this.edges.some(e => (e.otherVertex(this) === otherVertex));
   }
 }
+
+module.exports = Vertex;

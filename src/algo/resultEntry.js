@@ -1,8 +1,15 @@
 class ResultEntry {
+  // heuristicCost is null unless using A* extension to Dijkstra's
+  // algorithm.
   constructor(toVertex, lastEdge, costToVertex, heuristicCost) {
     this.toVertex = toVertex;
     this.lastEdge = lastEdge;
 
+    // If a heuristic is supplied, the totalCost is a combination of
+    // the costToVertex and the heuristicCost.
+    //
+    // Normal Dijkstra's only uses costToVertex and has no concept of
+    // heuristic cost.
     if (heuristicCost !== null) {
       this.costToVertex = costToVertex;
       this.heuristicCost = heuristicCost;
@@ -28,3 +35,5 @@ class ResultEntry {
     return json;
   }
 }
+
+module.exports = ResultEntry;
