@@ -1,3 +1,6 @@
+const Fringe = require('../algo/fringe');
+const ResultMap = require('../algo/resultMap');
+
 const CONSIDERED_EDGE_COLOR = 'yellow';
 const DEFAULT_EDGE_COLOR = 'black';
 const EXTRACTED_EDGE_COLOR = 'cyan';

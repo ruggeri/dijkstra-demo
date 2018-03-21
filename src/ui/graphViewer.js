@@ -27,8 +27,8 @@ class GraphViewer {
 
   canvasDimensions() {
     return {
-      height: parseInt(getComputedStyle(canvasEl).height),
-      width: parseInt(getComputedStyle(canvasEl).width)
+      height: parseInt(getComputedStyle(this.canvasEl).height),
+      width: parseInt(getComputedStyle(this.canvasEl).width)
     };
   }
 

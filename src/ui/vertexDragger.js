@@ -1,3 +1,5 @@
+const { distance } = require('../support/distance');
+
 class VertexDragger {
   constructor(graphViewer, canvasEl, vertexRadius) {
     this.canvasEl = canvasEl;

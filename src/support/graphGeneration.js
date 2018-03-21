@@ -1,3 +1,5 @@
+const Edge = require('../algo/edge');
+const Vertex = require('../algo/vertex');
 const {
   COST_SCALER,
   COST_VARIABILITY,
@@ -14,7 +16,7 @@ const {
   vertexDistance,
   verticesByDistance,
 } = require('./distance');
-const { setRandomSeed, seededRandom } = require('../random');
+const { setRandomSeed, seededRandom } = require('./random');
 
 // Set a seed that seems to work well.
 setRandomSeed(1);
@@ -121,13 +123,13 @@ function tryGenerateGraph() {
   const startVertex = vertices[0];
   // For A* search, choose as goal vertex the most distance of all
   // vertices.
-  const goalVertex = mostDistantVertex(startVertex);
+  const goalVertex = mostDistantVertex(startVertex, vertexPositions);
 
   return { vertices, vertexPositions, startVertex, goalVertex };
 }
 
 function generateGraph() {
-  for (const idx = 0; idx < MAX_GENERATE_GRAPH_TRIES; idx++) {
+  for (let idx = 0; idx < MAX_GENERATE_GRAPH_TRIES; idx++) {
     try {
       const graph = tryGenerateGraph();
       console.log("Successfully generated graph");

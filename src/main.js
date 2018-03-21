@@ -1,6 +1,8 @@
+const dijkstra = require('./algo/dijkstra');
 const { generateGraph, heuristic } = require('./support/graphGeneration');
 const DijkstraGraphColorer = require('./ui/DijkstraGraphColorer');
-const handleMessage = require('./ui/dijkstraMessageHandler');
+const MessageHandler = require('./ui/dijkstraMessageHandler');
+const GraphViewer = require('./ui/graphViewer');
 
 // Generate the graph.
 const {
@@ -27,8 +29,12 @@ const dijkstraMessages = Array.from(
   dijkstra(startVertex, (vertex) => heuristic(vertex, goalVertex))
 );
 
+const messageHandler = new MessageHandler(
+  graphViewer, actionPreEl, fringePreEl, resultPreEl, startVertex, goalVertex
+);
+
 // Draw initial state of the graph.
-handleMessage(dijkstraMessages[0], startVertex, goalVertex);
+messageHandler.handle(dijkstraMessages[0]);
 
 // Let user iterate backward/forward through the messages.
 let msgIndex = 0;
@@ -36,9 +42,9 @@ const numMessages = dijkstraMessages.length;
 document.addEventListener('keypress', (e) => {
   if (e.key === 'j') {
     msgIndex += (msgIndex < (numMessages - 1)) ? 1 : 0;
-    handleMessage(dijkstraMessages[msgIndex], startVertex, goalVertex);
+    messageHandler.handle(dijkstraMessages[msgIndex]);
   } else if (e.key === 'k') {
     msgIndex -= (msgIndex > 0) ? 1 : 0;
-    handleMessage(dijkstraMessages[msgIndex], startVertex, goalVertex);
+    messageHandler.handle(dijkstraMessages[msgIndex]);
   }
 });

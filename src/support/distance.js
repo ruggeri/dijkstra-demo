@@ -8,8 +8,8 @@ function distance(position1, position2) {
 }
 
 // Finds the vertex furthest away via "straight line" distance.
-function mostDistantVertex(startVertex) {
-  const verticesByDistance_ = verticesByDistance;
+function mostDistantVertex(startVertex, vertexPositions) {
+  const verticesByDistance_ = verticesByDistance(startVertex, vertexPositions);
   return verticesByDistance_[verticesByDistance_.length - 1].vertex;
 }
 
