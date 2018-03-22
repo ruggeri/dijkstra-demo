@@ -60,11 +60,155 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+// This is a hash map implementation of the Fringe concept. For sparse
+// graphs, it would be preferable to use a min binary heap.
+class Fringe {
+  constructor(store = new Map()) {
+    this.store = store;
+  }
+
+  extractMinimumEntry() {
+    let minimumEntry = null;
+
+    // This operation is O(v). It would be O(log v) if we were using a
+    // binary heap.
+    this.store.forEach(entry => {
+      if (!minimumEntry || entry.totalCost < minimumEntry.totalCost) {
+        minimumEntry = entry;
+      }
+    });
+
+    // Here I create a whole new fringe so that I avoid mutating this
+    // one. I do that for the sake of the visualization; this would
+    // otherwise be wasteful and inefficient.
+    const newStore = new Map(this.store);
+    newStore.delete(minimumEntry.toVertex);
+    return {
+      minimumEntry,
+      fringe: new Fringe(newStore),
+    }
+  }
+
+  addEntry(newEntry) {
+    // It is O(1) to find out if we already have a lower cost path
+    // to the vertex. In that case we don't add the new entry.
+    //
+    // This would be O(log v) if we used the binary heap.
+    const currentTotalCost = this.currentTotalCost(newEntry.toVertex);
+    if (currentTotalCost && currentTotalCost <= newEntry.totalCost) {
+      return {
+        didUpdate: false,
+        fringe: this,
+      };
+    }
+
+    // Once again I avoid mutation.
+    const newStore = new Map(this.store);
+    newStore.set(newEntry.toVertex, newEntry);
+    return {
+      didUpdate: true,
+      fringe: new Fringe(newStore),
+    };
+  }
+
+  currentEntry(toVertex) {
+    return this.store.get(toVertex) || null;
+  }
+
+  currentTotalCost(toVertex) {
+    const currentEntry = this.currentEntry(toVertex);
+    return currentEntry ? currentEntry.totalCost : null;
+  }
+
+  // Inefficient method used only for visualization purposes.
+  hasEdge(edge) {
+    return Array.from(this.store.values()).some(entry => (
+      entry.lastEdge === edge
+    ));
+  }
+
+  hasVertex(toVertex) {
+    return this.store.has(toVertex);
+  }
+
+  isEmpty() {
+    return this.store.size == 0;
+  }
+
+  toJSON() {
+    const json = {};
+    this.store.forEach((entry, vertex) => {
+      const entryJSON = entry.toJSON();
+      // Delete redundant information.
+      delete entryJSON.toVertex;
+
+      json[vertex.name] = entryJSON;
+    });
+
+    return json;
+  }
+}
+
+module.exports = Fringe;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+class ResultMap {
+  constructor(store = new Map()) {
+    this.store = store;
+  }
+
+  // addEntry ensures immutability and creates a copy of the ResultMap.
+  // This is unnecessary, but I do it for visualization purposes.
+  // This would be inefficient in a real implementation.
+  addEntry(entry) {
+    const newStore = new Map(this.store);
+    newStore.set(entry.toVertex, entry);
+    return new ResultMap(newStore);
+  }
+
+  // Inefficient method used only in visualization code.
+  hasEdge(edge) {
+    for (const entry of this.store.values()) {
+      if (entry.lastEdge === edge) return true;
+    }
+
+    return false;
+  }
+
+  hasVertex(vertex) {
+    return this.store.has(vertex);
+  }
+
+  toJSON() {
+    const json = {};
+    this.store.forEach((entry, vertex) => {
+      const entryJSON = entry.toJSON();
+      // Remove redundant information.
+      delete entryJSON.toVertex;
+
+      json[vertex.name] = entryJSON;
+    });
+
+    return json;
+  }
+}
+
+module.exports = ResultMap;
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports) {
 
 // Puts the costs in a human friendly scale (zero to ten).
@@ -94,14 +238,69 @@ module.exports = {
 
 
 /***/ }),
-/* 1 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const dijkstra = __webpack_require__(13);
-const { generateGraph, heuristic } = __webpack_require__(2);
-const DijkstraGraphColorer = __webpack_require__(5);
-const MessageHandler = __webpack_require__(6);
-const GraphViewer = __webpack_require__(9);
+const { COST_SCALER } = __webpack_require__(2);
+
+function distance(position1, position2) {
+  return Math.sqrt(
+    ((position1.x - position2.x) ** 2)
+      + ((position1.y - position2.y) ** 2)
+  );
+}
+
+// Finds the vertex furthest away via "straight line" distance.
+function mostDistantVertex(startVertex, vertexPositions) {
+  const verticesByDistance_ = verticesByDistance(startVertex, vertexPositions);
+  return verticesByDistance_[verticesByDistance_.length - 1].vertex;
+}
+
+// Useful convenience. Uses the vertex's position stored in the
+// metadata. This is the "straight line" distance between vertices.
+function vertexDistance(vertex1, vertex2) {
+  const vertexPosition1 = vertex1.metadata.vertexPosition;
+  const vertexPosition2 = vertex2.metadata.vertexPosition;
+  let cost = COST_SCALER * distance(vertexPosition1, vertexPosition2);
+  return Math.ceil(cost * 10) / 10;
+}
+
+// Sorts all vertices in graph by distance from a given vertex.
+function verticesByDistance(vertex, vertexPositions) {
+  const position = vertexPositions.get(vertex);
+  const vertices = []
+  vertexPositions.forEach((otherPosition, otherVertex) => {
+    if (vertex === otherVertex) return;
+    vertices.push({
+      vertex: otherVertex,
+      distance: distance(position, otherPosition),
+    });
+  });
+
+  vertices.sort((e1, e2) => {
+    return e1.distance - e2.distance;
+  });
+
+  return vertices;
+}
+
+module.exports = {
+  distance,
+  mostDistantVertex,
+  vertexDistance,
+  verticesByDistance,
+};
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const dijkstra = __webpack_require__(5);
+const { generateGraph, heuristic } = __webpack_require__(7);
+const DijkstraGraphColorer = __webpack_require__(11);
+const MessageHandler = __webpack_require__(12);
+const GraphViewer = __webpack_require__(13);
 
 // Generate the graph.
 const {
@@ -125,7 +324,7 @@ graphViewer.draw();
 
 // Run Dijkstra's algorithm and collect up all messages.
 const dijkstraMessages = Array.from(
-  dijkstra(startVertex, (vertex) => heuristic(vertex, goalVertex))
+  dijkstra(startVertex, null) //(vertex) => heuristic(vertex, goalVertex))
 );
 
 const messageHandler = new MessageHandler(
@@ -150,11 +349,187 @@ document.addEventListener('keypress', (e) => {
 
 
 /***/ }),
-/* 2 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Edge = __webpack_require__(7);
-const Vertex = __webpack_require__(8);
+const Fringe = __webpack_require__(0);
+const ResultEntry = __webpack_require__(6);
+const ResultMap = __webpack_require__(1);
+
+// Runs Dijkstra's algorithm from a start vertex. Will run the A*
+// variant if you supply a heuristic.
+//
+// This is a generator function. It yields messages along the way about
+// what it is doing.
+function* dijkstra(startVertex, heuristic) {
+  let result = new ResultMap();
+  let fringe = new Fringe();
+
+  // Initial vertex has zero cost and no prev edge.
+  ({ fringe } = fringe.addEntry(new ResultEntry(
+    startVertex,
+    null,
+    0,
+    heuristic ? heuristic(startVertex) : null
+  )));
+
+  yield {
+    name: 'INITIAL_STATE',
+    result,
+    fringe,
+  };
+
+  while (!fringe.isEmpty()) {
+    // Extract minimum cost entry, lock in this path to the vertex.
+    let minimumEntry;
+    ({ minimumEntry, fringe } = (
+      fringe.extractMinimumEntry()
+    ));
+    result = result.addEntry(minimumEntry);
+
+    yield {
+      name: 'EXTRACT_ENTRY',
+      minimumEntry,
+      fringe,
+      result,
+    };
+
+    // Yield all the messages that are generated by processExtractedEntry.
+    // Note that I use a callback to record the final state of the
+    // fringe.
+    yield* processExtractedEntry(minimumEntry, fringe, result, heuristic, (newFringe) => {
+      fringe = newFringe;
+    });
+
+    yield {
+      name: 'UPDATE_COMPLETE',
+      fringe,
+      result,
+    };
+  }
+
+  yield {
+    name: 'FINAL_RESULT',
+    fringe,
+    result,
+  }
+}
+
+// Processes all edges out of a newly extracted minimum entry.
+//
+// This generator will yield messages about what it is doing.
+//
+// Because fringe is immutable, we let the caller know about the final
+// updated fringe via the callback. It isn't simple to just return the
+// new fringe because the other yielded objects are all messages.
+function* processExtractedEntry(minimumEntry, fringe, result, heuristic, cb) {
+  // Consider each edge out of the just extracted vertex.
+  for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
+    const [edge, toVertex] = evPair;
+
+    // Get the current path to the toVertex (if any).
+    const currentEntry = fringe.currentEntry(toVertex);
+    // Compute the cost of the newly discovered path.
+    const newCostToVertex = minimumEntry.costToVertex + edge.cost;
+    const heuristicCost = heuristic ? heuristic(toVertex) : null;
+
+    const newEntry = new ResultEntry(
+      toVertex,
+      edge,
+      newCostToVertex,
+      heuristicCost,
+    )
+
+    yield {
+      name: 'CONSIDER_EDGE',
+      // entry we just locked in.
+      fromEntry: minimumEntry,
+      // current entry for the toVertex for the edge
+      currentEntry: currentEntry,
+      // newly found path to the toVertex for the edge.
+      newEntry: newEntry,
+      fringe,
+      result
+    };
+
+    // Don't bother trying to discover new paths to results already
+    // locked in.
+    if (result.hasVertex(toVertex)) {
+      continue;
+    }
+
+    // Try adding to the fringe. addEntry tells us whether the fringe
+    // was changed.
+    ({ didUpdate, fringe } = fringe.addEntry(newEntry))
+
+    if (didUpdate) {
+      yield {
+        name: 'UPDATE_FRINGE',
+        prevEntry: currentEntry,
+        newEntry,
+        fringe,
+        result,
+      };
+    }
+  }
+
+  cb(fringe);
+}
+
+module.exports = dijkstra;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+class ResultEntry {
+  // heuristicCost is null unless using A* extension to Dijkstra's
+  // algorithm.
+  constructor(toVertex, lastEdge, costToVertex, heuristicCost) {
+    this.toVertex = toVertex;
+    this.lastEdge = lastEdge;
+
+    // If a heuristic is supplied, the totalCost is a combination of
+    // the costToVertex and the heuristicCost.
+    //
+    // Normal Dijkstra's only uses costToVertex and has no concept of
+    // heuristic cost.
+    if (heuristicCost !== null) {
+      this.costToVertex = costToVertex;
+      this.heuristicCost = heuristicCost;
+      this.totalCost = this.costToVertex + this.heuristicCost;
+    } else {
+      this.costToVertex = costToVertex;
+      this.totalCost = costToVertex;
+    }
+  }
+
+  toJSON() {
+    const json = Object.assign({
+      toVertex: this.toVertex.name,
+      lastEdge: this.lastEdge && this.lastEdge.name,
+    });
+
+    if (this.heuristicCost !== null) {
+      json.costToVertex = this.costToVertex;
+      json.heuristicCost = this.heuristicCost;
+    }
+    json.totalCost = this.totalCost;
+
+    return json;
+  }
+}
+
+module.exports = ResultEntry;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Edge = __webpack_require__(8);
+const Vertex = __webpack_require__(9);
 const {
   COST_SCALER,
   COST_VARIABILITY,
@@ -164,14 +539,14 @@ const {
   MIN_DISTANCE,
   NUM_VERTICES,
   PADDING,
-} = __webpack_require__(0);
+} = __webpack_require__(2);
 const {
   distance,
   mostDistantVertex,
   vertexDistance,
   verticesByDistance,
 } = __webpack_require__(3);
-const { setRandomSeed, seededRandom } = __webpack_require__(4);
+const { setRandomSeed, seededRandom } = __webpack_require__(10);
 
 // Set a seed that seems to work well.
 setRandomSeed(1);
@@ -305,62 +680,68 @@ module.exports = {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 8 */
+/***/ (function(module, exports) {
 
-const { COST_SCALER } = __webpack_require__(0);
+class Edge {
+  constructor(name, cost, vertex1, vertex2) {
+    this.name = name;
+    this.cost = cost;
+    this.vertices = [vertex1, vertex2];
 
-function distance(position1, position2) {
-  return Math.sqrt(
-    ((position1.x - position2.x) ** 2)
-      + ((position1.y - position2.y) ** 2)
-  );
+    vertex1.edges.push(this);
+    vertex2.edges.push(this);
+  }
+
+  otherVertex(vertex1) {
+    if (this.vertices[0] == vertex1) {
+      return this.vertices[1];
+    } else if (this.vertices[1] == vertex1) {
+      return this.vertices[0];
+    } else {
+      throw "Vertex not at either end!"
+    }
+  }
 }
 
-// Finds the vertex furthest away via "straight line" distance.
-function mostDistantVertex(startVertex, vertexPositions) {
-  const verticesByDistance_ = verticesByDistance(startVertex, vertexPositions);
-  return verticesByDistance_[verticesByDistance_.length - 1].vertex;
-}
-
-// Useful convenience. Uses the vertex's position stored in the
-// metadata. This is the "straight line" distance between vertices.
-function vertexDistance(vertex1, vertex2) {
-  const vertexPosition1 = vertex1.metadata.vertexPosition;
-  const vertexPosition2 = vertex2.metadata.vertexPosition;
-  let cost = COST_SCALER * distance(vertexPosition1, vertexPosition2);
-  return Math.ceil(cost * 10) / 10;
-}
-
-// Sorts all vertices in graph by distance from a given vertex.
-function verticesByDistance(vertex, vertexPositions) {
-  const position = vertexPositions.get(vertex);
-  const vertices = []
-  vertexPositions.forEach((otherPosition, otherVertex) => {
-    if (vertex === otherVertex) return;
-    vertices.push({
-      vertex: otherVertex,
-      distance: distance(position, otherPosition),
-    });
-  });
-
-  vertices.sort((e1, e2) => {
-    return e1.distance - e2.distance;
-  });
-
-  return vertices;
-}
-
-module.exports = {
-  distance,
-  mostDistantVertex,
-  vertexDistance,
-  verticesByDistance,
-};
+module.exports = Edge;
 
 
 /***/ }),
-/* 4 */
+/* 9 */
+/***/ (function(module, exports) {
+
+class Vertex {
+  constructor(name, metadata) {
+    this.name = name;
+    this.edges = [];
+    // Vertex can store metadata in case that is helpful for an
+    // application.
+    this.metadata = metadata;
+  }
+
+  edgeVertexPairs() {
+    const result = this.edges.map(e => [
+      e, e.otherVertex(this)
+    ]);
+
+    result.sort((pair1, pair2) => {
+      return pair1[0].name > pair2[0].name;
+    });
+
+    return result;
+  }
+
+  isNeighborTo(otherVertex) {
+    return this.edges.some(e => (e.otherVertex(this) === otherVertex));
+  }
+}
+
+module.exports = Vertex;
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports) {
 
 // RIPOFF: https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
@@ -393,11 +774,11 @@ module.exports = {
 
 
 /***/ }),
-/* 5 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Fringe = __webpack_require__(12);
-const ResultMap = __webpack_require__(11);
+const Fringe = __webpack_require__(0);
+const ResultMap = __webpack_require__(1);
 
 const CONSIDERED_EDGE_COLOR = 'yellow';
 const DEFAULT_EDGE_COLOR = 'black';
@@ -481,7 +862,7 @@ module.exports = DijkstraGraphColorer;
 
 
 /***/ }),
-/* 6 */
+/* 12 */
 /***/ (function(module, exports) {
 
 function prettyJSON(object) {
@@ -579,65 +960,10 @@ module.exports = MessageHandler;
 
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-class Edge {
-  constructor(name, cost, vertex1, vertex2) {
-    this.name = name;
-    this.cost = cost;
-    this.vertices = [vertex1, vertex2];
-
-    vertex1.edges.push(this);
-    vertex2.edges.push(this);
-  }
-
-  otherVertex(vertex1) {
-    if (this.vertices[0] == vertex1) {
-      return this.vertices[1];
-    } else if (this.vertices[1] == vertex1) {
-      return this.vertices[0];
-    } else {
-      throw "Vertex not at either end!"
-    }
-  }
-}
-
-module.exports = Edge;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-class Vertex {
-  constructor(name, metadata) {
-    this.name = name;
-    this.edges = [];
-    // Vertex can store metadata in case that is helpful for an
-    // application.
-    this.metadata = metadata;
-  }
-
-  edgeVertexPairs() {
-    return this.edges.map(e => [
-      e, e.otherVertex(this)
-    ]);
-  }
-
-  isNeighborTo(otherVertex) {
-    return this.edges.some(e => (e.otherVertex(this) === otherVertex));
-  }
-}
-
-module.exports = Vertex;
-
-
-/***/ }),
-/* 9 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const VertexDragger = __webpack_require__(10);
+const VertexDragger = __webpack_require__(14);
 
 const BACKGROUND_COLOR = 'gray';
 const EDGE_FONT_SIZE = 20;
@@ -753,7 +1079,7 @@ module.exports = GraphViewer;
 
 
 /***/ }),
-/* 10 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { distance } = __webpack_require__(3);
@@ -806,327 +1132,6 @@ class VertexDragger {
 }
 
 module.exports = VertexDragger;
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-class ResultMap {
-  constructor(store = new Map()) {
-    this.store = store;
-  }
-
-  // addEntry ensures immutability and creates a copy of the ResultMap.
-  // This is unnecessary, but I do it for visualization purposes.
-  // This would be inefficient in a real implementation.
-  addEntry(entry) {
-    const newStore = new Map(this.store);
-    newStore.set(entry.toVertex, entry);
-    return new ResultMap(newStore);
-  }
-
-  // Inefficient method used only in visualization code.
-  hasEdge(edge) {
-    for (const entry of this.store.values()) {
-      if (entry.lastEdge === edge) return true;
-    }
-
-    return false;
-  }
-
-  hasVertex(vertex) {
-    return this.store.has(vertex);
-  }
-
-  toJSON() {
-    const json = {};
-    this.store.forEach((entry, vertex) => {
-      const entryJSON = entry.toJSON();
-      // Remove redundant information.
-      delete entryJSON.toVertex;
-
-      json[vertex.name] = entryJSON;
-    });
-
-    return json;
-  }
-}
-
-module.exports = ResultMap;
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-// This is a hash map implementation of the Fringe concept. For sparse
-// graphs, it would be preferable to use a min binary heap.
-class Fringe {
-  constructor(store = new Map()) {
-    this.store = store;
-  }
-
-  extractMinimumEntry() {
-    let minimumEntry = null;
-
-    // This operation is O(v). It would be O(log v) if we were using a
-    // binary heap.
-    this.store.forEach(entry => {
-      if (!minimumEntry || entry.totalCost < minimumEntry.totalCost) {
-        minimumEntry = entry;
-      }
-    });
-
-    // Here I create a whole new fringe so that I avoid mutating this
-    // one. I do that for the sake of the visualization; this would
-    // otherwise be wasteful and inefficient.
-    const newStore = new Map(this.store);
-    newStore.delete(minimumEntry.toVertex);
-    return {
-      minimumEntry,
-      fringe: new Fringe(newStore),
-    }
-  }
-
-  addEntry(newEntry) {
-    // It is O(1) to find out if we already have a lower cost path
-    // to the vertex. In that case we don't add the new entry.
-    //
-    // This would be O(log v) if we used the binary heap.
-    const currentTotalCost = this.currentTotalCost(newEntry.toVertex);
-    if (currentTotalCost && currentTotalCost <= newEntry.totalCost) {
-      return {
-        didUpdate: false,
-        fringe: this,
-      };
-    }
-
-    // Once again I avoid mutation.
-    const newStore = new Map(this.store);
-    newStore.set(newEntry.toVertex, newEntry);
-    return {
-      didUpdate: true,
-      fringe: new Fringe(newStore),
-    };
-  }
-
-  currentEntry(toVertex) {
-    return this.store.get(toVertex) || null;
-  }
-
-  currentTotalCost(toVertex) {
-    const currentEntry = this.currentEntry(toVertex);
-    return currentEntry ? currentEntry.totalCost : null;
-  }
-
-  // Inefficient method used only for visualization purposes.
-  hasEdge(edge) {
-    return Array.from(this.store.values()).some(entry => (
-      entry.lastEdge === edge
-    ));
-  }
-
-  hasVertex(toVertex) {
-    return this.store.has(toVertex);
-  }
-
-  isEmpty() {
-    return this.store.size == 0;
-  }
-
-  toJSON() {
-    const json = {};
-    this.store.forEach((entry, vertex) => {
-      const entryJSON = entry.toJSON();
-      // Delete redundant information.
-      delete entryJSON.toVertex;
-
-      json[vertex.name] = entryJSON;
-    });
-
-    return json;
-  }
-}
-
-module.exports = Fringe;
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Fringe = __webpack_require__(12);
-const ResultEntry = __webpack_require__(15);
-const ResultMap = __webpack_require__(11);
-
-// Runs Dijkstra's algorithm from a start vertex. Will run the A*
-// variant if you supply a heuristic.
-//
-// This is a generator function. It yields messages along the way about
-// what it is doing.
-function* dijkstra(startVertex, heuristic) {
-  let result = new ResultMap();
-  let fringe = new Fringe();
-
-  // Initial vertex has zero cost and no prev edge.
-  ({ fringe } = fringe.addEntry(new ResultEntry(
-    startVertex,
-    null,
-    0,
-    heuristic ? heuristic(startVertex) : null
-  )));
-
-  yield {
-    name: 'INITIAL_STATE',
-    result,
-    fringe,
-  };
-
-  while (!fringe.isEmpty()) {
-    // Extract minimum cost entry, lock in this path to the vertex.
-    let minimumEntry;
-    ({ minimumEntry, fringe } = (
-      fringe.extractMinimumEntry()
-    ));
-    result = result.addEntry(minimumEntry);
-
-    yield {
-      name: 'EXTRACT_ENTRY',
-      minimumEntry,
-      fringe,
-      result,
-    };
-
-    // Yield all the messages that are generated by processExtractedEntry.
-    // Note that I use a callback to record the final state of the
-    // fringe.
-    yield* processExtractedEntry(minimumEntry, fringe, result, heuristic, (newFringe) => {
-      fringe = newFringe;
-    });
-
-    yield {
-      name: 'UPDATE_COMPLETE',
-      fringe,
-      result,
-    };
-  }
-
-  yield {
-    name: 'FINAL_RESULT',
-    fringe,
-    result,
-  }
-}
-
-// Processes all edges out of a newly extracted minimum entry.
-//
-// This generator will yield messages about what it is doing.
-//
-// Because fringe is immutable, we let the caller know about the final
-// updated fringe via the callback. It isn't simple to just return the
-// new fringe because the other yielded objects are all messages.
-function* processExtractedEntry(minimumEntry, fringe, result, heuristic, cb) {
-  // Consider each edge out of the just extracted vertex.
-  for (const evPair of minimumEntry.toVertex.edgeVertexPairs()) {
-    const [edge, toVertex] = evPair;
-
-    // Get the current path to the toVertex (if any).
-    const currentEntry = fringe.currentEntry(toVertex);
-    // Compute the cost of the newly discovered path.
-    const newCostToVertex = minimumEntry.costToVertex + edge.cost;
-    const heuristicCost = heuristic ? heuristic(toVertex) : null;
-
-    const newEntry = new ResultEntry(
-      toVertex,
-      edge,
-      newCostToVertex,
-      heuristicCost,
-    )
-
-    yield {
-      name: 'CONSIDER_EDGE',
-      // entry we just locked in.
-      fromEntry: minimumEntry,
-      // current entry for the toVertex for the edge
-      currentEntry: currentEntry,
-      // newly found path to the toVertex for the edge.
-      newEntry: newEntry,
-      fringe,
-      result
-    };
-
-    // Don't bother trying to discover new paths to results already
-    // locked in.
-    if (result.hasVertex(toVertex)) {
-      continue;
-    }
-
-    // Try adding to the fringe. addEntry tells us whether the fringe
-    // was changed.
-    ({ didUpdate, fringe } = fringe.addEntry(newEntry))
-
-    if (didUpdate) {
-      yield {
-        name: 'UPDATE_FRINGE',
-        prevEntry: currentEntry,
-        newEntry,
-        fringe,
-        result,
-      };
-    }
-  }
-
-  cb(fringe);
-}
-
-module.exports = dijkstra;
-
-
-/***/ }),
-/* 14 */,
-/* 15 */
-/***/ (function(module, exports) {
-
-class ResultEntry {
-  // heuristicCost is null unless using A* extension to Dijkstra's
-  // algorithm.
-  constructor(toVertex, lastEdge, costToVertex, heuristicCost) {
-    this.toVertex = toVertex;
-    this.lastEdge = lastEdge;
-
-    // If a heuristic is supplied, the totalCost is a combination of
-    // the costToVertex and the heuristicCost.
-    //
-    // Normal Dijkstra's only uses costToVertex and has no concept of
-    // heuristic cost.
-    if (heuristicCost !== null) {
-      this.costToVertex = costToVertex;
-      this.heuristicCost = heuristicCost;
-      this.totalCost = this.costToVertex + this.heuristicCost;
-    } else {
-      this.costToVertex = costToVertex;
-      this.totalCost = costToVertex;
-    }
-  }
-
-  toJSON() {
-    const json = Object.assign({
-      toVertex: this.toVertex.name,
-      lastEdge: this.lastEdge && this.lastEdge.name,
-    });
-
-    if (this.heuristicCost !== null) {
-      json.costToVertex = this.costToVertex;
-      json.heuristicCost = this.heuristicCost;
-    }
-    json.totalCost = this.totalCost;
-
-    return json;
-  }
-}
-
-module.exports = ResultEntry;
 
 
 /***/ })
