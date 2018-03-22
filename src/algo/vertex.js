@@ -8,9 +8,15 @@ class Vertex {
   }
 
   edgeVertexPairs() {
-    return this.edges.map(e => [
+    const result = this.edges.map(e => [
       e, e.otherVertex(this)
     ]);
+
+    result.sort((pair1, pair2) => {
+      return pair1[0].name > pair2[0].name;
+    });
+
+    return result;
   }
 
   isNeighborTo(otherVertex) {

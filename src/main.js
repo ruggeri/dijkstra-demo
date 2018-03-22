@@ -26,7 +26,7 @@ graphViewer.draw();
 
 // Run Dijkstra's algorithm and collect up all messages.
 const dijkstraMessages = Array.from(
-  dijkstra(startVertex, (vertex) => heuristic(vertex, goalVertex))
+  dijkstra(startVertex, null) //(vertex) => heuristic(vertex, goalVertex))
 );
 
 const messageHandler = new MessageHandler(
